@@ -17,7 +17,7 @@ export function DashboardProvider({ children }) {
   const [data, setData] = useState(EMPTY);
   const [status, setStatus] = useState({ loading: true, error: null, connection: isMock ? 'mock' : 'connecting', lastSync: null });
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [realtime, setRealtime] = useState({ status: 'CONNECTING', events: [] });
+  const [realtime, setRealtime] = useState({ status: 'CONNECTING' });
   const refreshRef = useRef(null);
   const month = useMemo(() => monthBounds(filters.dateTo), [filters.dateTo]);
   const fetchFrom = filters.dateFrom < month.start ? filters.dateFrom : month.start;
@@ -37,12 +37,11 @@ export function DashboardProvider({ children }) {
   useEffect(() => {
     let timer;
     const unsubscribe = subscribeRealtime(
-      (evt) => {
-        setRealtime((r) => ({ ...r, events: [{ ...evt, id: Math.random(), at: new Date() }, ...r.events].slice(0, 30) }));
+      () => {
         clearTimeout(timer);
         timer = setTimeout(() => refreshRef.current?.(), 800);
       },
-      (status) => setRealtime((r) => ({ ...r, status })),
+      (status) => setRealtime({ status }),
     );
     return () => {
       clearTimeout(timer);

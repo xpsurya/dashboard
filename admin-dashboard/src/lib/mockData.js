@@ -36,15 +36,49 @@ const LEADERS = [
 const SLOW_LEADERS = new Set([3, 6, 9]);
 const BUYERS = ['Ibu Ratna', 'Bapak Hadi', 'Ibu Sinta', 'Bapak Yoga', 'Ibu Lina', 'Ibu Wati', 'Bapak Rizal', 'Ibu Tuti', 'Ibu Mira', 'Bapak Doni'];
 const PRODUCTS = [
-  { sku: 'SKU-001', product_name: 'Susu UHT Full Cream 1L', category: 'Dairy', price: 19500 },
-  { sku: 'SKU-002', product_name: 'Susu UHT Cokelat 200ml', category: 'Dairy', price: 6500 },
-  { sku: 'SKU-003', product_name: 'Yogurt Drink Strawberry 250ml', category: 'Dairy', price: 9800 },
-  { sku: 'SKU-004', product_name: 'Keju Cheddar Slice 170g', category: 'Dairy', price: 27500 },
-  { sku: 'SKU-005', product_name: 'Susu Kental Manis 370g', category: 'Dairy', price: 12900 },
-  { sku: 'SKU-006', product_name: 'Butter Cookies Tin 454g', category: 'Snack', price: 64000 },
-  { sku: 'SKU-007', product_name: 'Sereal Gandum Madu 330g', category: 'Breakfast', price: 41500 },
-  { sku: 'SKU-008', product_name: 'Kopi Susu RTD 220ml', category: 'Beverage', price: 8500 },
+  { sku: 'SKU-001', parent_sku: 'SUSU UHT', product_name: 'Susu UHT Full Cream 1L', category: 'Dairy', price: 19500 },
+  { sku: 'SKU-002', parent_sku: 'SUSU UHT', product_name: 'Susu UHT Cokelat 200ml', category: 'Dairy', price: 6500 },
+  { sku: 'SKU-003', parent_sku: 'YOGURT DRINK', product_name: 'Yogurt Drink Strawberry 250ml', category: 'Dairy', price: 9800 },
+  { sku: 'SKU-004', parent_sku: 'KEJU', product_name: 'Keju Cheddar Slice 170g', category: 'Dairy', price: 27500 },
+  { sku: 'SKU-005', parent_sku: 'SUSU KENTAL MANIS', product_name: 'Susu Kental Manis 370g', category: 'Dairy', price: 12900 },
+  { sku: 'SKU-006', parent_sku: 'COOKIES', product_name: 'Butter Cookies Tin 454g', category: 'Snack', price: 64000 },
+  { sku: 'SKU-007', parent_sku: 'SEREAL', product_name: 'Sereal Gandum Madu 330g', category: 'Breakfast', price: 41500 },
+  { sku: 'SKU-008', parent_sku: 'KOPI RTD', product_name: 'Kopi Susu RTD 220ml', category: 'Beverage', price: 8500 },
+  { sku: 'SKU-009', parent_sku: 'SUSU UHT', product_name: 'Susu UHT Stroberi 200ml', category: 'Dairy', price: 6500 },
+  { sku: 'SKU-010', parent_sku: 'YOGURT DRINK', product_name: 'Yogurt Drink Plain 250ml', category: 'Dairy', price: 9800 },
+  { sku: 'SKU-011', parent_sku: 'KEJU', product_name: 'Keju Mozzarella 200g', category: 'Dairy', price: 38500 },
+  { sku: 'SKU-012', parent_sku: 'KOPI RTD', product_name: 'Kopi Gula Aren RTD 220ml', category: 'Beverage', price: 9500 },
 ];
+// popularity weight + products that are often bought together (demo market-basket behaviour)
+const POPULARITY = { 'SKU-001': 9, 'SKU-002': 8, 'SKU-003': 5, 'SKU-004': 4, 'SKU-005': 6, 'SKU-006': 2, 'SKU-007': 4, 'SKU-008': 7, 'SKU-009': 5, 'SKU-010': 3, 'SKU-011': 2, 'SKU-012': 4 };
+const AFFINITY = {
+  'SKU-001': ['SKU-007', 'SKU-004'], 'SKU-007': ['SKU-001'], 'SKU-002': ['SKU-009', 'SKU-003'], 'SKU-009': ['SKU-002'],
+  'SKU-003': ['SKU-010', 'SKU-002'], 'SKU-010': ['SKU-003'], 'SKU-004': ['SKU-011', 'SKU-001'], 'SKU-011': ['SKU-004'],
+  'SKU-005': ['SKU-006', 'SKU-008'], 'SKU-006': ['SKU-005'], 'SKU-008': ['SKU-012', 'SKU-005'], 'SKU-012': ['SKU-008'],
+};
+const BASKET_SIZE = [[1, 0.44], [2, 0.3], [3, 0.15], [4, 0.08], [5, 0.03]];
+const FIRST = ['Ratna', 'Hadi', 'Sinta', 'Yoga', 'Lina', 'Wati', 'Rizal', 'Tuti', 'Mira', 'Doni', 'Sri', 'Agus', 'Yanti', 'Eko', 'Lilis', 'Dodi', 'Ani', 'Wahyu', 'Endang', 'Rudi', 'Sari', 'Asep', 'Nining', 'Bayu'];
+const LAST = ['Susanti', 'Wijaya', 'Rahayu', 'Saputra', 'Lestari', 'Hidayat', 'Kusuma', 'Pratama', 'Handoko', 'Purnama', 'Nugraha', 'Maharani'];
+const PRODUCT_BY_SKU = new Map(PRODUCTS.map((p) => [p.sku, p]));
+const weighted = (pairs) => {
+  const total = pairs.reduce((s, [, w]) => s + w, 0);
+  let r = rng() * total;
+  for (const [v, w] of pairs) {
+    r -= w;
+    if (r <= 0) return v;
+  }
+  return pairs[pairs.length - 1][0];
+};
+function pickBasket() {
+  const k = weighted(BASKET_SIZE);
+  const chosen = [weighted(Object.entries(POPULARITY))];
+  while (chosen.length < k) {
+    const partners = (AFFINITY[chosen[chosen.length - 1]] || []).filter((x) => !chosen.includes(x));
+    const next = partners.length && rng() < 0.6 ? pick(partners) : weighted(Object.entries(POPULARITY).filter(([x]) => !chosen.includes(x)));
+    chosen.push(next);
+  }
+  return chosen.map((sku) => PRODUCT_BY_SKU.get(sku));
+}
 const PHOTOS = {
   checkin: ['/photos/checkin-1.jpg', '/photos/checkin-2.jpg'],
   a: '/photos/display-a.jpg',
@@ -110,7 +144,14 @@ function generate() {
   const validations = [];
   const discipline = [];
   const expiry = new Map();
-  const customers = Array.from({ length: 2500 }, () => ({ name: pick(BUYERS), phone: `08${between(1100000000, 9899999999)}` }));
+  // per-store customer pool: ~20% loyal (sering kembali), sisanya pembeli sesekali
+  const customerPool = new Map(stores.map((st) => [st.store_code, Array.from({ length: 100 }, (_, ci) => ({
+    name: `${rng() < 0.5 ? 'Ibu' : 'Bapak'} ${pick(FIRST)} ${pick(LAST)}`, phone: `08${between(1100000000, 9899999999)}`, w: ci < 25 ? 8 : 1,
+  }))]));
+  const pickCustomer = (storeCode) => {
+    if (rng() < 0.12) return { name: pick(BUYERS), phone: '0' }; // pembeli tanpa no. HP → identitas pakai ID TRX
+    return weighted(customerPool.get(storeCode).map((c) => [c, c.w]));
+  };
   let n = 0;
 
   const validate = (rec, field, table, spg) => {
@@ -162,14 +203,14 @@ function generate() {
       let t = plusMin(checkin, between(25, 60));
       for (let j = 0; j < trxCount; j += 1) {
         if (t > now || (checkout && t > checkout)) break;
-        const k = between(1, 3);
-        const chosen = [...PRODUCTS].sort(() => rng() - 0.5).slice(0, k);
+        const chosen = pickBasket();
+        const k = chosen.length;
         const trxId = `TRX-${d.replaceAll('-', '')}-${spg.spg_code.slice(4)}-${j + 1}`;
         const items = chosen.map((p, x) => {
-          const qty = Math.max(1, Math.round((dailyTarget / trxCount / k / p.price) * (0.6 + rng() * 0.8)));
+          const qty = Math.max(1, Math.round((dailyTarget / trxCount / Math.max(k, 2) / p.price) * (0.6 + rng() * 0.8)));
           return { id: `${trxId}-${x + 1}`, trx_id: trxId, sku: p.sku, product_name: p.product_name, qty, price: p.price, subtotal: qty * p.price };
         });
-        const buyer = pick(customers);
+        const buyer = pickCustomer(spg.store_code);
         const order = {
           id: `SO-${(n += 1)}`, trx_id: trxId, spg_code: spg.spg_code, store_code: spg.store_code, trx_date: d,
           buyer_name: buyer.name, buyer_phone: buyer.phone, total_omzet: items.reduce((s, i) => s + i.subtotal, 0),

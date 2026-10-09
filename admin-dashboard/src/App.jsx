@@ -1,11 +1,10 @@
 import { useRef, useState } from 'react';
-import { CalendarCheck, Database, Images, LoaderCircle, PackageSearch, ShieldCheck, TrendingUp } from 'lucide-react';
+import { BarChart3, CalendarCheck, Database, Images, LoaderCircle, PackageSearch, ShieldCheck, TrendingUp, Users } from 'lucide-react';
 import { DashboardProvider, useDashboard } from './context/DashboardContext';
 import { ToastProvider, useToast } from './components/common/Toast';
 import { TopNav } from './components/layout/TopNav';
 import { FilterBar } from './components/layout/FilterBar';
 import { TabNav } from './components/layout/TabNav';
-import { LiveTicker } from './components/layout/LiveTicker';
 import { AuthProvider } from './context/AuthContext';
 import { useKiosk } from './hooks/useKiosk';
 import { exportDashboard } from './lib/exportDashboard';
@@ -16,6 +15,8 @@ import StockTracking from './tabs/stock/StockTracking';
 import PhotoGallery from './tabs/photos/PhotoGallery';
 import MasterDatabase from './tabs/master/MasterDatabase';
 import AuditDiscipline from './tabs/audit/AuditDiscipline';
+import CustomerAnalytics from './tabs/customer/CustomerAnalytics';
+import ProductAnalytics from './tabs/product/ProductAnalytics';
 
 const TABS = [
   { id: 'selling', label: 'Selling Performance', icon: TrendingUp, Comp: SellingPerformance },
@@ -24,6 +25,8 @@ const TABS = [
   { id: 'photos', label: 'Photo Gallery', icon: Images, Comp: PhotoGallery },
   { id: 'master', label: 'Master Database', icon: Database, Comp: MasterDatabase },
   { id: 'audit', label: 'Validasi & Audit', icon: ShieldCheck, Comp: AuditDiscipline },
+  { id: 'customer', label: 'Customer Analytic', icon: Users, Comp: CustomerAnalytics },
+  { id: 'product', label: 'Product Analytic', icon: BarChart3, Comp: ProductAnalytics },
 ];
 const KIOSK_TABS = TABS.filter((t) => t.id !== 'master').map((t) => t.id);
 
@@ -64,7 +67,6 @@ function Shell() {
       <TopNav kiosk={kiosk} onToggleKiosk={toggleKiosk} onExport={onExport} exporting={exporting} />
       <FilterBar />
       <TabNav tabs={TABS} active={tab} onChange={setTab} kiosk={kiosk ? kioskState : null} />
-      <LiveTicker />
       {status.error && (
         <div className="mx-4 mt-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200 md:mx-6" data-testid="data-error-banner">
           Gagal memuat data dari Supabase: {status.error}

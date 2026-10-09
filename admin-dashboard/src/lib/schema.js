@@ -50,6 +50,7 @@ export const MASTER_TABLES = {
     fields: [
       { key: 'sku', label: 'SKU', required: true, sample: 'SKU-101' },
       { key: 'product_name', label: 'Nama Produk', required: true, sample: 'Susu UHT Cokelat 200ml' },
+      { key: 'parent_sku', label: 'Parent SKU', sample: 'SUSU UHT' },
       { key: 'category', label: 'Kategori', sample: 'Dairy' },
       { key: 'price', label: 'Harga (IDR)', type: 'number', sample: 6500 },
     ],

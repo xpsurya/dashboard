@@ -6,12 +6,11 @@ import { fmtDateTime, matches, num } from '../../lib/format';
 import { Lightbox } from './Lightbox';
 
 const ATT_FIELDS = [
-  { id: 'checkin', label: 'Foto Absen Masuk', field: 'photo_checkin_url', tone: 'blue' },
   { id: 'display_a', label: 'Foto Pajangan A', field: 'photo_display_a_url', tone: 'green' },
   { id: 'display_b', label: 'Foto Pajangan B', field: 'photo_display_b_url', tone: 'green' },
   { id: 'display_c', label: 'Foto Pajangan C', field: 'photo_display_c_url', tone: 'green' },
 ];
-const CATEGORIES = [{ id: 'all', label: 'Semua Foto' }, ...ATT_FIELDS, { id: 'nota', label: 'Foto Nota Penjualan' }];
+const CATEGORIES = [{ id: 'all', label: 'Semua Foto' }, ...ATT_FIELDS];
 
 export default function PhotoGallery() {
   const { data, filters, spgMap, storeMap, geoOk, inPeriod } = useDashboard();
@@ -28,26 +27,17 @@ export default function PhotoGallery() {
       return { spgCode: r.spg_code, spgName: spg?.name ?? r.spg_code, storeName: storeMap.get(r.store_code)?.store_name ?? r.store_code, ok: !spg || geoOk(spg) };
     };
     const list = [];
-    if (cat !== 'nota') {
-      data.attendance.forEach((a) => {
-        if (!inDate(a.work_date)) return;
-        const m = meta(a);
-        if (!m.ok) return;
-        ATT_FIELDS.forEach((f) => {
-          if ((cat === 'all' || cat === f.id) && a[f.field]) list.push({ id: `${a.id}-${f.id}`, url: a[f.field], label: f.label, tone: f.tone, time: a.checkin_time, ...m });
-        });
+    data.attendance.forEach((a) => {
+      if (!inDate(a.work_date)) return;
+      const m = meta(a);
+      if (!m.ok) return;
+      ATT_FIELDS.forEach((f) => {
+        if ((cat === 'all' || cat === f.id) && a[f.field]) list.push({ id: `${a.id}-${f.id}`, url: a[f.field], label: f.label, tone: f.tone, time: a.checkin_time, ...m });
       });
-    }
-    if (cat === 'all' || cat === 'nota') {
-      data.sales.forEach((o) => {
-        if (!inDate(o.trx_date) || !o.receipt_photo_url || o.status === 'DELETED') return;
-        const m = meta(o);
-        if (m.ok) list.push({ id: `${o.id}-nota`, url: o.receipt_photo_url, label: 'Foto Nota Penjualan', tone: 'yellow', time: o.created_at, extra: o.trx_id, ...m });
-      });
-    }
+    });
     const term = q || filters.search;
     return list.filter((p) => matches(term, p.spgCode, p.spgName, p.storeName, p.extra)).sort((a, b) => String(b.time).localeCompare(String(a.time)));
-  }, [data.attendance, data.sales, cat, date, q, filters.search, inPeriod, spgMap, storeMap, geoOk]);
+  }, [data.attendance, cat, date, q, filters.search, inPeriod, spgMap, storeMap, geoOk]);
 
   const nav = useCallback((step) => setOpen((i) => (i + step + photos.length) % photos.length), [photos.length]);
   const close = useCallback(() => setOpen(null), []);

@@ -1,6 +1,7 @@
 import { eachDay, parseDate, toISODate } from './dates';
 import { groupBy, ratio, sum } from './format';
 import config from './config';
+import { customerKey } from './customerAnalytics';
 
 export function buildDerived(data, filters, month) {
   const calMap = new Map(data.calendar.map((c) => [String(c.work_date).slice(0, 10), c.is_workday]));
@@ -47,7 +48,7 @@ export function sellingMetrics(ctx) {
     return {
       ...s, storeName: storeMap.get(s.store_code)?.store_name ?? s.store_code, target, monthlyOmzet,
       monthAch: ratio(monthlyOmzet, target), periodTarget, periodOmzet, periodAch: periodTarget ? ratio(periodOmzet, periodTarget) : null,
-      customers: new Set(period.map((o) => o.buyer_phone || o.buyer_name)).size, transactions: period.length,
+      customers: new Set(period.map(customerKey)).size, transactions: period.length,
     };
   });
   const totalTarget = sum(rows, 'target');
@@ -55,7 +56,7 @@ export function sellingMetrics(ctx) {
   const periodOrders = sales.filter((o) => inPeriod(o.trx_date));
   const kpis = {
     mtdOmzet, totalTarget, ach: ratio(mtdOmzet, totalTarget), timerate, periodOmzet: sum(periodOrders, 'total_omzet'),
-    customers: new Set(periodOrders.map((o) => o.buyer_phone || o.buyer_name)).size, transactions: periodOrders.length,
+    customers: new Set(periodOrders.map(customerKey)).size, transactions: periodOrders.length,
     activeSpg: new Set(attendance.filter((a) => inPeriod(a.work_date) && a.checkin_time).map((a) => a.spg_code)).size,
     masterSpg: spgs.length, overTr: rows.filter((r) => r.target && r.monthAch >= timerate).length,
   };
@@ -118,7 +119,7 @@ export function attendanceMetrics(ctx) {
     reg.set(s.region, g);
   });
   const regional = [...reg].map(([region, g]) => ({ region, ...g })).sort((a, b) => a.region.localeCompare(b.region));
-  const heatmap = spgs.map((s) => ({ spg: s, cells: monthDays.map((d) => ({ date: d, status: statusOf(s.spg_code, d) })) }));
+  const heatmap = spgs.map((s) => ({ spg: s, cells: monthDays.map((d) => ({ date: d, status: statusOf(s.spg_code, d), att: attMap.get(key(s.spg_code, d)) })) }));
   const logRows = logs
     .map((a) => ({ ...a, spg: ctx.spgMap.get(a.spg_code), storeName: storeMap.get(a.store_code)?.store_name ?? a.store_code }))
     .sort((a, b) => String(b.checkin_time).localeCompare(String(a.checkin_time)));

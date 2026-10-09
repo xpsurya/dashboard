@@ -1,6 +1,9 @@
-import { CalendarDays } from 'lucide-react';
+import { useState } from 'react';
+import { CalendarDays, Camera } from 'lucide-react';
 import { Card, EmptyState } from '../../components/common/ui';
-import { matches } from '../../lib/format';
+import { useDashboard } from '../../context/DashboardContext';
+import { fmtDate, fmtTime, matches } from '../../lib/format';
+import { Lightbox } from '../photos/Lightbox';
 
 const CELL = {
   present: { cls: 'bg-emerald-500', label: 'Present' },
@@ -15,17 +18,27 @@ export function AttendanceHeatmap({ heatmap, monthLabel, search }) {
   const rows = heatmap.filter((r) => matches(search, r.spg.spg_code, r.spg.name, r.spg.store_code));
   const days = heatmap[0]?.cells ?? [];
   const legend = Object.entries(CELL).filter(([k]) => k !== 'future');
+  const { storeMap } = useDashboard();
+  const [photo, setPhoto] = useState(null);
+  const openPhoto = (spg, att) => setPhoto({
+    url: att.photo_checkin_url, label: 'Foto Absen Masuk', spgName: spg.name, time: att.checkin_time,
+    storeName: storeMap.get(att.store_code)?.store_name ?? att.store_code,
+    extra: `${fmtDate(att.work_date)} · In ${fmtTime(att.checkin_time)} · Out ${fmtTime(att.checkout_time)}`,
+  });
 
   return (
     <Card
       title="1-Month Calendar Heatmap Matrix"
-      subtitle={`${monthLabel} · status kehadiran per SPG per tanggal`}
+      subtitle={`${monthLabel} · status kehadiran per SPG per tanggal · klik kotak hijau/kuning untuk melihat foto absen`}
       icon={CalendarDays}
       bodyClass="p-0"
       testId="attendance-heatmap"
-      actions={legend.map(([k, v]) => (
-        <span key={k} className="flex items-center gap-1.5 text-[11px] text-slate-400"><span className={`h-3 w-3 rounded-sm ${v.cls}`} />{v.label.split(' ')[0]}</span>
-      ))}
+      actions={[
+        ...legend.map(([k, v]) => (
+          <span key={k} className="flex items-center gap-1.5 text-[11px] text-slate-400"><span className={`h-3 w-3 rounded-sm ${v.cls}`} />{v.label.split(' ')[0]}</span>
+        )),
+        <span key="photo" className="flex items-center gap-1 text-[11px] text-blue-300"><Camera className="h-3 w-3" /> Klik = Foto</span>,
+      ]}
     >
       <div className="max-h-[520px] overflow-auto">
         <table className="border-separate border-spacing-0">
@@ -52,7 +65,17 @@ export function AttendanceHeatmap({ heatmap, monthLabel, search }) {
                   </td>
                   {r.cells.map((c) => (
                     <td key={c.date} className={`border-b border-slate-800/80 px-0.5 py-1 ${bg}`}>
-                      <div className={`mx-auto h-5 w-5 rounded-[4px] transition-transform hover:scale-125 ${CELL[c.status].cls}`} title={`${c.date} · ${CELL[c.status].label}`} />
+                      {c.att?.photo_checkin_url ? (
+                        <button
+                          type="button"
+                          onClick={() => openPhoto(r.spg, c.att)}
+                          className={`mx-auto block h-5 w-5 cursor-zoom-in rounded-[4px] transition-transform hover:scale-125 hover:ring-2 hover:ring-white/70 ${CELL[c.status].cls}`}
+                          title={`${c.date} · ${CELL[c.status].label} · In ${fmtTime(c.att.checkin_time)} — klik untuk lihat foto absen`}
+                          data-testid={`heatmap-cell-${r.spg.spg_code}-${c.date}`}
+                        />
+                      ) : (
+                        <div className={`mx-auto h-5 w-5 rounded-[4px] transition-transform hover:scale-125 ${CELL[c.status].cls}`} title={`${c.date} · ${CELL[c.status].label}`} />
+                      )}
                     </td>
                   ))}
                   <td className={`td text-center font-mono text-xs text-emerald-300 ${bg}`}>{count('present')}</td>
@@ -65,6 +88,7 @@ export function AttendanceHeatmap({ heatmap, monthLabel, search }) {
         </table>
         {!rows.length && <EmptyState text="Tidak ada SPG untuk ditampilkan." testId="heatmap-empty" />}
       </div>
+      {photo && <Lightbox photos={[photo]} onClose={() => setPhoto(null)} />}
     </Card>
   );
 }

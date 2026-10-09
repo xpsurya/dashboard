@@ -32,10 +32,12 @@ create table if not exists public.manpower (
 create table if not exists public.products (
   sku          text primary key,
   product_name text not null,
+  parent_sku   text,
   category     text,
   price        numeric(12,0) not null default 0,
   created_at   timestamptz not null default now()
 );
+alter table public.products add column if not exists parent_sku text;
 
 create table if not exists public.coverages (
   coverage_id text primary key,

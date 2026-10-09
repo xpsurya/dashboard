@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Check, ClipboardCheck, Pencil, Trash2 } from 'lucide-react';
+import { Check, ClipboardCheck, ImageOff, Pencil, Trash2 } from 'lucide-react';
 import { useDashboard } from '../../context/DashboardContext';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/common/Toast';
@@ -8,6 +8,7 @@ import { validateRecord } from '../../lib/validationActions';
 import { duration, fmtDate, fmtDateTime, fmtTime, hours, idr, matches } from '../../lib/format';
 import config from '../../lib/config';
 import { ReviewDeleteModal, ReviewEditModal } from './ReviewModals';
+import { Lightbox } from '../photos/Lightbox';
 
 const waitHours = (iso) => (iso ? (Date.now() - new Date(iso)) / 3600000 : 0);
 
@@ -21,6 +22,17 @@ function Actions({ id, busy, onApprove, onEdit, onDelete }) {
   );
 }
 
+function PhotoThumb({ url, label, onOpen, testId }) {
+  if (!url) {
+    return <span className="inline-flex h-10 w-14 items-center justify-center rounded-md border border-dashed border-slate-700 text-slate-600" title="Tidak ada foto"><ImageOff className="h-4 w-4" /></span>;
+  }
+  return (
+    <button type="button" onClick={onOpen} className="group relative block h-10 w-14 cursor-zoom-in overflow-hidden rounded-md border border-slate-700 ring-blue-400/60 transition hover:ring-2" title={`Lihat ${label}`} data-testid={testId}>
+      <img src={url} alt={label} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110" />
+    </button>
+  );
+}
+
 export function ReviewQueue() {
   const { data, spgMap, storeMap, geoOk, filters, refresh } = useDashboard();
   const { user } = useAuth();
@@ -30,6 +42,7 @@ export function ReviewQueue() {
   const [editing, setEditing] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [busyId, setBusyId] = useState(null);
+  const [photo, setPhoto] = useState(null);
 
   const pending = useMemo(() => {
     const scope = (r) => {
@@ -64,8 +77,8 @@ export function ReviewQueue() {
     return <Badge tone={h > config.slaOverdueHours ? 'red' : h > config.slaOverdueHours / 2 ? 'yellow' : 'slate'}>{hours(h)}</Badge>;
   };
   const head = kind === 'sales'
-    ? ['TRX ID', 'SPG', 'Store', 'Buyer', 'Items', 'Total Omzet', 'Submitted', 'Menunggu', 'Aksi']
-    : ['Tanggal', 'SPG', 'Store', 'Check-in', 'Checkout', 'Durasi', 'Submitted', 'Menunggu', 'Aksi'];
+    ? ['TRX ID', 'SPG', 'Store', 'Buyer', 'Items', 'Total Omzet', 'Foto Nota', 'Submitted', 'Menunggu', 'Aksi']
+    : ['Tanggal', 'SPG', 'Store', 'Check-in', 'Checkout', 'Durasi', 'Foto Absen', 'Submitted', 'Menunggu', 'Aksi'];
 
   return (
     <Card title="Leader Review Queue" subtitle={`${pending.sales.length} transaksi & ${pending.attendance.length} absensi menunggu validasi · ${isAdmin ? 'semua SPG (admin)' : 'SPG binaan Anda'}`} icon={ClipboardCheck} bodyClass="p-0" testId="leader-review-queue"
@@ -95,6 +108,10 @@ export function ReviewQueue() {
                       <td className="td text-slate-300">{r.buyer_name}</td>
                       <td className="td text-center font-mono">{r.sales_order_items?.length ?? 0}</td>
                       <td className="td text-right font-mono text-emerald-300">{idr(r.total_omzet)}</td>
+                      <td className="td">
+                        <PhotoThumb url={r.receipt_photo_url} label="Foto Nota" testId={`review-photo-${i}`}
+                          onOpen={() => setPhoto({ url: r.receipt_photo_url, label: 'Foto Nota Penjualan', spgName: spg?.name ?? r.spg_code, storeName: store, time: r.created_at, extra: `${r.trx_id} · ${idr(r.total_omzet)}` })} />
+                      </td>
                     </>
                   ) : (
                     <>
@@ -104,6 +121,10 @@ export function ReviewQueue() {
                       <td className="td font-mono text-emerald-300">{fmtTime(r.checkin_time)}</td>
                       <td className="td font-mono text-blue-300">{fmtTime(r.checkout_time)}</td>
                       <td className="td font-mono">{duration(r.work_duration_minutes)}</td>
+                      <td className="td">
+                        <PhotoThumb url={r.photo_checkin_url} label="Foto Absen" testId={`review-photo-${i}`}
+                          onOpen={() => setPhoto({ url: r.photo_checkin_url, label: 'Foto Absen Masuk', spgName: spg?.name ?? r.spg_code, storeName: store, time: r.checkin_time, extra: `${fmtDate(r.work_date)} · In ${fmtTime(r.checkin_time)} · Out ${fmtTime(r.checkout_time)}` })} />
+                      </td>
                     </>
                   )}
                   <td className="td font-mono text-xs text-slate-400">{fmtDateTime(r.email_sent_at)}</td>
@@ -117,6 +138,7 @@ export function ReviewQueue() {
         {!rows.length && <EmptyState text="Antrian kosong — semua sudah tervalidasi." testId="review-queue-empty" />}
       </div>
       {editing && <ReviewEditModal kind={kind} record={editing} busy={busyId === editing.id} onClose={() => setEditing(null)} onSubmit={(patch, note) => run(editing, 'UPDATE', { patch, note })} />}
+      {photo && <Lightbox photos={[photo]} onClose={() => setPhoto(null)} />}
       {deleting && <ReviewDeleteModal record={deleting} busy={busyId === deleting.id} onClose={() => setDeleting(null)} onSubmit={(note) => run(deleting, 'DELETE', { note })} />}
     </Card>
   );
