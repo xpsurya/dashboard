@@ -1,0 +1,33 @@
+{
+  "summary": "Frontend testing of iteration 2 (auth gates + realtime sim). Found & fixed one blocker: .env mock passwords were truncated at '#' because unquoted dotenv treats # as comment (Admin#2026 -> 'Admin', Leader#2026 -> 'Leader'). After quoting values and restarting frontend, ALL requested features pass: realtime simulation (count 0->3 in 40s, KPI total_transactions 0->2, latest ticker shows transaksi event, realtime-status-indicator shows 'REALTIME (SIMULASI)'); nav login modal with wrong-pw error 'Email atau password salah.'; admin & leader role badges; master-db-gate shown when logged out, leader -> access-denied-message, admin -> master-database-view; master-db-lock-button logs out and re-locks; review-queue-gate shown when logged-out while KPIs/discipline remain visible; leader scope 'SPG binaan Anda' (0 pending), admin scope 'semua SPG (admin)' (22 sales, 6 attendance pending), admin>=leader confirmed; session persists across tab switches; no credentials rendered on page; mobile 390px no horizontal overflow (html=0, header=0).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Mock auth env loading",
+        "issue": "CRITICAL (fixed by tester): /app/admin-dashboard/.env had VITE_MOCK_ADMIN_PASSWORD=Admin#2026 and VITE_MOCK_LEADER_PASSWORD=Leader#2026 WITHOUT quotes. dotenv treats '#' as inline comment, so Vite exposed values as 'Admin' and 'Leader', making documented credentials fail with 'Email atau password salah.'. Tester quoted the values and restarted frontend, after which both admin and leader login succeed.",
+        "affected_selectors": ["nav-login-submit-button", "master-db-gate-login-submit-button", "review-queue-gate-login-submit-button"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Keep the quoted form in .env for any password containing shell/dotenv-special chars (# $ space). Consider adding a startup assertion/warning if VITE_MOCK_*_PASSWORD looks truncated (e.g. length < 4) to catch this class of bug in dev."
+  ],
+  "critical_code_review_comments": [
+    "src/lib/auth.js silently falls back to isMock behaviour; if env password is empty/undefined the comparison still runs and the user just sees a generic invalid-credential error — a dev-only console.warn when VITE_MOCK_*_PASSWORD is falsy would have surfaced the .env parsing issue immediately.",
+    "src/components/auth/LoginForm.jsx shows demo mode notice; good. No duplicate concern.",
+    "ReviewQueue.jsx: scope filter uses user.email which is safe; good role-based filtering.",
+    "AccessGate.jsx handles both unauthenticated and wrong-role states cleanly with distinct test-ids."
+  ],
+  "updated_files": ["/app/admin-dashboard/.env"],
+  "success_rate": {"backend": "n/a (skipped per request)", "frontend": "100% after env fix"},
+  "test_credentials": "Admin: xp.surya@gmail.com / Admin#2026 ; Leader: budi.leader@fieldforce.example / Leader#2026 (both verified working after .env quoting fix)",
+  "seed_data_creation": "None (in-memory mock resets on reload).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Mock mode uses VITE_SUPABASE_URL=https://supabase.co placeholder; isMock=true. Passwords in .env MUST be quoted because of '#' character. Simulated realtime fires every ~15s. For deterministic ticker checks, select today's date in global filter (default) and wait >=20s. Realtime status indicator text 'REALTIME (SIMULASI)' is only visible on sm+ screens (hidden md breakpoint handling), so check it in desktop viewport. Session uses sessionStorage key 'ffcc_mock_session'.",
+  "rca_of_the_issue": "RCA: dotenv (used by Vite) treats unquoted '#' as the start of an inline comment, so VITE_MOCK_ADMIN_PASSWORD=Admin#2026 was parsed as 'Admin'. Reproduction: curl the dev module /src/lib/auth.js — Vite inlines import.meta.env at the top and the value appeared as 'Admin'. Mitigation applied: wrap values in double quotes in .env and restart `supervisorctl restart frontend`. Verified by re-fetching module and performing successful login via nav/master-db-gate/review-queue-gate for both admin and leader roles."
+}

@@ -26,8 +26,14 @@
 - Review queue Approve/Update/Delete → leader_validations + discipline logs; discipline score & leader SLA
 - Testing agent iteration_1: 100% frontend pass
 
+## Implemented (2026-10-09, iteration 2)
+- Supabase Realtime (postgres_changes on attendance_logs, sales_orders) → auto refresh + Live Feed ticker; MOCK mode simulates events every 15s
+- Supabase Auth email/password login (no sign-up), roles in public.user_roles (admin/leader); Master DB = admin only; Review Queue = leader (own SPGs via manpower.leader_email) or admin; old "ADMIN" password gate removed
+- schema.sql: user_roles, is_admin()/is_leader_of() helpers, granular RLS, realtime publication, admin seed for xp.surya@gmail.com
+- Testing iteration_2: 100% after .env quoting fix
+
 ## Backlog
-- P0: Connect real Supabase (fill .env, run schema.sql)
-- P1: Supabase Auth + role-based RLS (replace client-side password gate & anon full access)
-- P1: Realtime subscriptions for live updates; email notification to leaders
+- P0: Connect real Supabase (fill .env, run schema.sql, create Auth users)
+- P1: Require login (viewer role) for reading dashboard data; email notification to leaders
+- P1: Atomic validation RPC (status update + validation log + discipline log in one transaction)
 - P2: Code-splitting (bundle 2.5MB), per-store drill-down pages
