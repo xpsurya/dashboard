@@ -48,6 +48,13 @@
 ## Implemented (iteration 5)
 - /app/dummy-data/*.csv: dummy data 12 tabel (header = schema.sql, FK konsisten, UUID valid, enum sesuai constraint, 14 hari terakhir) + README panduan import; generator: scripts/generate-dummy-csv.mjs
 
+## Implemented (iteration 6 — go-live prep)
+- admin-dashboard/.env now points to LIVE project oykonaecttzabnxfcchc (mock creds kept for rollback)
+- User approved resetting their Supabase tables to dashboard schema (old data may be destroyed)
+- supabase/RESET_AND_SETUP.sql = drop old tables + full schema.sql (user runs once in SQL Editor)
+- scripts/setup-supabase.mjs = creates admin+10 leader accounts (Admin API if service key, else signUp) + upserts user_roles + imports 11 dummy CSVs (calendar skipped; seeded by schema)
+- Default passwords: Admin#2026 / Leader#2026 (same as mock)
+
 ## Backlog
 - P0: Connect real Supabase (fill .env, run schema.sql, create Auth users)
 - P1: Require login (viewer role) for reading dashboard data; email notification to leaders
