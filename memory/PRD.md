@@ -48,12 +48,12 @@
 ## Implemented (iteration 5)
 - /app/dummy-data/*.csv: dummy data 12 tabel (header = schema.sql, FK konsisten, UUID valid, enum sesuai constraint, 14 hari terakhir) + README panduan import; generator: scripts/generate-dummy-csv.mjs
 
-## Implemented (iteration 6 — go-live prep)
-- admin-dashboard/.env now points to LIVE project oykonaecttzabnxfcchc (mock creds kept for rollback)
-- User approved resetting their Supabase tables to dashboard schema (old data may be destroyed)
-- supabase/RESET_AND_SETUP.sql = drop old tables + full schema.sql (user runs once in SQL Editor)
-- scripts/setup-supabase.mjs = creates admin+10 leader accounts (Admin API if service key, else signUp) + upserts user_roles + imports 11 dummy CSVs (calendar skipped; seeded by schema)
-- Default passwords: Admin#2026 / Leader#2026 (same as mock)
+## Implemented (iteration 6 — GO-LIVE Supabase)
+- LIVE on project oykonaecttzabnxfcchc: user ran RESET_AND_SETUP.sql (old tables replaced with dashboard schema) + FINAL_STEP.sql (admin role + storage bucket 'field-photos' public)
+- scripts/setup-supabase.mjs executed: 10 leader accounts (signUp), 11 user_roles, 11 dummy CSVs imported (~6.4k rows)
+- Verified end-to-end: LIVE pill, realtime SUBSCRIBED, admin login, all tabs with data, Approve writes to live DB (RLS ok)
+- Remaining user action: Authentication settings → turn OFF "Allow new users to sign up"
+- Photo URLs still point to app-served /photos/*.jpg; field app should upload to storage bucket field-photos and store its public URL
 
 ## Backlog
 - P0: Connect real Supabase (fill .env, run schema.sql, create Auth users)

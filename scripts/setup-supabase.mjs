@@ -12,14 +12,15 @@
  * di Authentication settings) dan akun ADMIN harus sudah dibuat manual di dashboard
  * beserta 1x run schema.sql (yang otomatis mengisi role admin-nya).
  */
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createClient } from '@supabase/supabase-js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const dash = join(here, '..', 'admin-dashboard');
 const dataDir = join(here, '..', 'dummy-data');
+const { createClient } = createRequire(join(dash, 'package.json'))('@supabase/supabase-js');
 
 const envFile = Object.fromEntries(
   readFileSync(join(dash, '.env'), 'utf8').split('\n')
