@@ -45,6 +45,9 @@
 ## Implemented (iteration 4)
 - RFM Segmentation on Customer Analytic: Champions / Loyal / New & Potensial / At Risk / Hibernating with adaptive thresholds (aktif <= span*0.25, diam > span*0.6, high value >= P50), segment cards + chart + detail table, Prioritas Win-Back table (At Risk+Hibernating by value desc, store/SPG, idle days), Segment badge column in Top Customer, win-back insight bullet
 
+## Implemented (iteration 5)
+- /app/dummy-data/*.csv: dummy data 12 tabel (header = schema.sql, FK konsisten, UUID valid, enum sesuai constraint, 14 hari terakhir) + README panduan import; generator: scripts/generate-dummy-csv.mjs
+
 ## Backlog
 - P0: Connect real Supabase (fill .env, run schema.sql, create Auth users)
 - P1: Require login (viewer role) for reading dashboard data; email notification to leaders

@@ -1,0 +1,35 @@
+﻿spg_code,name,region,area,store_code,leader_name,leader_email,phone,monthly_target,status,join_date,created_at
+SPG-001,Rina Kartika,Jabodetabek,Jakarta Pusat,ST-001,Agus Setiawan,agus.leader@fieldforce.example,081461253972,33500000,ACTIVE,2025-08-03,2025-08-03T00:00:00.000Z
+SPG-002,Dewi Lestari,Jabodetabek,Jakarta Pusat,ST-002,Budi Santoso,budi.leader@fieldforce.example,084947637576,39000000,ACTIVE,2025-10-08,2025-10-08T00:00:00.000Z
+SPG-003,Siti Aminah,Jabodetabek,Jakarta Selatan,ST-003,Agus Setiawan,agus.leader@fieldforce.example,086690136396,49500000,ACTIVE,2025-02-01,2025-02-01T00:00:00.000Z
+SPG-004,Putri Ayu,Jabodetabek,Jakarta Selatan,ST-004,Budi Santoso,budi.leader@fieldforce.example,082087528664,42000000,ACTIVE,2025-10-24,2025-10-24T00:00:00.000Z
+SPG-005,Nurul Huda,Jabodetabek,Tangerang,ST-005,Agus Setiawan,agus.leader@fieldforce.example,087492951236,60000000,ACTIVE,2025-11-13,2025-11-13T00:00:00.000Z
+SPG-006,Ayu Wandira,Jabodetabek,Tangerang,ST-006,Budi Santoso,budi.leader@fieldforce.example,085523109525,46500000,ACTIVE,2025-06-07,2025-06-07T00:00:00.000Z
+SPG-007,Maya Sari,Jabodetabek,Bekasi,ST-007,Agus Setiawan,agus.leader@fieldforce.example,081582676135,31500000,ACTIVE,2025-02-16,2025-02-16T00:00:00.000Z
+SPG-008,Indah Permata,Jabodetabek,Bekasi,ST-008,Budi Santoso,budi.leader@fieldforce.example,082665643440,54000000,ACTIVE,2025-10-19,2025-10-19T00:00:00.000Z
+SPG-009,Fitri Handayani,Jawa Barat,Bandung,ST-009,Rudi Hartono,rudi.leader@fieldforce.example,082259505895,44500000,ACTIVE,2025-05-12,2025-05-12T00:00:00.000Z
+SPG-010,Lia Amelia,Jawa Barat,Bandung,ST-010,Hendra Wijaya,hendra.leader@fieldforce.example,088568545507,36000000,ACTIVE,2025-12-18,2025-12-18T00:00:00.000Z
+SPG-011,Yuni Astuti,Jawa Barat,Bogor,ST-011,Rudi Hartono,rudi.leader@fieldforce.example,086604578460,57000000,ACTIVE,2025-04-27,2025-04-27T00:00:00.000Z
+SPG-012,Rani Oktavia,Jawa Barat,Bogor,ST-012,Hendra Wijaya,hendra.leader@fieldforce.example,087082013009,57000000,ACTIVE,2025-03-12,2025-03-12T00:00:00.000Z
+SPG-013,Wulan Sari,Jawa Barat,Cirebon,ST-013,Rudi Hartono,rudi.leader@fieldforce.example,086093793450,49500000,ACTIVE,2025-04-27,2025-04-27T00:00:00.000Z
+SPG-014,Tika Rahma,Jawa Barat,Cirebon,ST-014,Hendra Wijaya,hendra.leader@fieldforce.example,084248983990,46000000,ACTIVE,2025-08-01,2025-08-01T00:00:00.000Z
+SPG-015,Nadia Putri,Jawa Tengah,Semarang,ST-015,Joko Prasetyo,joko.leader@fieldforce.example,085448891880,39500000,ACTIVE,2025-02-11,2025-02-11T00:00:00.000Z
+SPG-016,Sari Wulandari,Jawa Tengah,Semarang,ST-016,Bambang Susilo,bambang.leader@fieldforce.example,088013954214,53500000,ACTIVE,2025-02-09,2025-02-09T00:00:00.000Z
+SPG-017,Mega Utami,Jawa Tengah,Solo,ST-017,Joko Prasetyo,joko.leader@fieldforce.example,088848365987,41000000,ACTIVE,2025-07-26,2025-07-26T00:00:00.000Z
+SPG-018,Intan Nuraini,Jawa Tengah,Solo,ST-018,Bambang Susilo,bambang.leader@fieldforce.example,083326741385,49500000,ACTIVE,2025-11-13,2025-11-13T00:00:00.000Z
+SPG-019,Dian Safitri,Jawa Tengah,Yogyakarta,ST-019,Joko Prasetyo,joko.leader@fieldforce.example,083900132606,51500000,ACTIVE,2025-03-25,2025-03-25T00:00:00.000Z
+SPG-020,Vina Melati,Jawa Tengah,Yogyakarta,ST-020,Bambang Susilo,bambang.leader@fieldforce.example,081825903064,33000000,ACTIVE,2025-05-23,2025-05-23T00:00:00.000Z
+SPG-021,Anisa Rahman,Jawa Timur,Surabaya,ST-021,Dedi Kurniawan,dedi.leader@fieldforce.example,081272445520,42000000,ACTIVE,2025-09-17,2025-09-17T00:00:00.000Z
+SPG-022,Citra Dewi,Jawa Timur,Surabaya,ST-022,Andi Firmansyah,andi.leader@fieldforce.example,089789175986,58500000,ACTIVE,2025-10-08,2025-10-08T00:00:00.000Z
+SPG-023,Eka Pratiwi,Jawa Timur,Malang,ST-023,Dedi Kurniawan,dedi.leader@fieldforce.example,081671962998,26000000,ACTIVE,2025-04-12,2025-04-12T00:00:00.000Z
+SPG-024,Gita Savitri,Jawa Timur,Malang,ST-024,Andi Firmansyah,andi.leader@fieldforce.example,089388167048,25500000,ACTIVE,2025-01-15,2025-01-15T00:00:00.000Z
+SPG-025,Hana Pertiwi,Jawa Timur,Sidoarjo,ST-025,Dedi Kurniawan,dedi.leader@fieldforce.example,082068701164,57500000,ACTIVE,2025-12-24,2025-12-24T00:00:00.000Z
+SPG-026,Irma Susanti,Jawa Timur,Sidoarjo,ST-026,Andi Firmansyah,andi.leader@fieldforce.example,088370361743,36000000,ACTIVE,2025-08-16,2025-08-16T00:00:00.000Z
+SPG-027,Juwita Anggraini,Sumatera,Medan,ST-027,Fajar Nugroho,fajar.leader@fieldforce.example,082133808039,25000000,ACTIVE,2025-03-16,2025-03-16T00:00:00.000Z
+SPG-028,Kiki Amalia,Sumatera,Medan,ST-028,Yusuf Hidayat,yusuf.leader@fieldforce.example,083419281689,37000000,ACTIVE,2025-11-18,2025-11-18T00:00:00.000Z
+SPG-029,Laras Ayuning,Sumatera,Palembang,ST-029,Fajar Nugroho,fajar.leader@fieldforce.example,088482216690,27500000,ACTIVE,2025-11-09,2025-11-09T00:00:00.000Z
+SPG-030,Mira Anjani,Sumatera,Palembang,ST-030,Yusuf Hidayat,yusuf.leader@fieldforce.example,081651766457,58000000,ACTIVE,2025-08-05,2025-08-05T00:00:00.000Z
+SPG-031,Novi Kurnia,Sumatera,Pekanbaru,ST-031,Fajar Nugroho,fajar.leader@fieldforce.example,084137745347,36500000,ACTIVE,2025-02-28,2025-02-28T00:00:00.000Z
+SPG-032,Okta Rahayu,Sumatera,Pekanbaru,ST-032,Yusuf Hidayat,yusuf.leader@fieldforce.example,087434037896,60000000,ACTIVE,2025-07-17,2025-07-17T00:00:00.000Z
+SPG-033,Prita Lestari,Jabodetabek,Jakarta Selatan,ST-004,Budi Santoso,budi.leader@fieldforce.example,082087528664,0,INACTIVE,2025-10-24,2025-10-24T00:00:00.000Z
+SPG-034,Ratna Sari,Jabodetabek,Tangerang,ST-005,Agus Setiawan,agus.leader@fieldforce.example,087492951236,0,INACTIVE,2025-11-13,2025-11-13T00:00:00.000Z

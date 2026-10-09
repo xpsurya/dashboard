@@ -1,0 +1,33 @@
+﻿store_code,store_name,chain,region,area,address,created_at
+ST-001,Transmart Jakarta Pusat,Transmart,Jabodetabek,Jakarta Pusat,"Jl. Gatot Subroto No. 84, Jakarta Pusat",2026-01-01T00:00:00.000Z
+ST-002,Lottemart Jakarta Pusat 2,Lottemart,Jabodetabek,Jakarta Pusat,"Jl. Diponegoro No. 4, Jakarta Pusat",2026-01-01T00:00:00.000Z
+ST-003,Superindo Jakarta Selatan,Superindo,Jabodetabek,Jakarta Selatan,"Jl. Pemuda No. 54, Jakarta Selatan",2026-01-01T00:00:00.000Z
+ST-004,Giant Jakarta Selatan 2,Giant,Jabodetabek,Jakarta Selatan,"Jl. Ahmad Yani No. 125, Jakarta Selatan",2026-01-01T00:00:00.000Z
+ST-005,Hero Tangerang,Hero,Jabodetabek,Tangerang,"Jl. Pemuda No. 33, Tangerang",2026-01-01T00:00:00.000Z
+ST-006,Foodmart Tangerang 2,Foodmart,Jabodetabek,Tangerang,"Jl. Asia Afrika No. 43, Tangerang",2026-01-01T00:00:00.000Z
+ST-007,Alfamidi Bekasi,Alfamidi,Jabodetabek,Bekasi,"Jl. Merdeka No. 54, Bekasi",2026-01-01T00:00:00.000Z
+ST-008,Hypermart Bekasi 2,Hypermart,Jabodetabek,Bekasi,"Jl. Sudirman No. 117, Bekasi",2026-01-01T00:00:00.000Z
+ST-009,Lottemart Bandung,Lottemart,Jawa Barat,Bandung,"Jl. Diponegoro No. 124, Bandung",2026-01-01T00:00:00.000Z
+ST-010,Superindo Bandung 2,Superindo,Jawa Barat,Bandung,"Jl. Ahmad Yani No. 73, Bandung",2026-01-01T00:00:00.000Z
+ST-011,Giant Bogor,Giant,Jawa Barat,Bogor,"Jl. Gatot Subroto No. 84, Bogor",2026-01-01T00:00:00.000Z
+ST-012,Hero Bogor 2,Hero,Jawa Barat,Bogor,"Jl. Ahmad Yani No. 151, Bogor",2026-01-01T00:00:00.000Z
+ST-013,Foodmart Cirebon,Foodmart,Jawa Barat,Cirebon,"Jl. Ahmad Yani No. 61, Cirebon",2026-01-01T00:00:00.000Z
+ST-014,Alfamidi Cirebon 2,Alfamidi,Jawa Barat,Cirebon,"Jl. Diponegoro No. 109, Cirebon",2026-01-01T00:00:00.000Z
+ST-015,Transmart Semarang,Transmart,Jawa Tengah,Semarang,"Jl. Pemuda No. 147, Semarang",2026-01-01T00:00:00.000Z
+ST-016,Lottemart Semarang 2,Lottemart,Jawa Tengah,Semarang,"Jl. Diponegoro No. 63, Semarang",2026-01-01T00:00:00.000Z
+ST-017,Superindo Solo,Superindo,Jawa Tengah,Solo,"Jl. Sudirman No. 108, Solo",2026-01-01T00:00:00.000Z
+ST-018,Giant Solo 2,Giant,Jawa Tengah,Solo,"Jl. Asia Afrika No. 111, Solo",2026-01-01T00:00:00.000Z
+ST-019,Hero Yogyakarta,Hero,Jawa Tengah,Yogyakarta,"Jl. Diponegoro No. 90, Yogyakarta",2026-01-01T00:00:00.000Z
+ST-020,Foodmart Yogyakarta 2,Foodmart,Jawa Tengah,Yogyakarta,"Jl. Diponegoro No. 33, Yogyakarta",2026-01-01T00:00:00.000Z
+ST-021,Hypermart Surabaya,Hypermart,Jawa Timur,Surabaya,"Jl. Merdeka No. 129, Surabaya",2026-01-01T00:00:00.000Z
+ST-022,Transmart Surabaya 2,Transmart,Jawa Timur,Surabaya,"Jl. Merdeka No. 54, Surabaya",2026-01-01T00:00:00.000Z
+ST-023,Lottemart Malang,Lottemart,Jawa Timur,Malang,"Jl. Asia Afrika No. 59, Malang",2026-01-01T00:00:00.000Z
+ST-024,Superindo Malang 2,Superindo,Jawa Timur,Malang,"Jl. Asia Afrika No. 174, Malang",2026-01-01T00:00:00.000Z
+ST-025,Giant Sidoarjo,Giant,Jawa Timur,Sidoarjo,"Jl. Merdeka No. 123, Sidoarjo",2026-01-01T00:00:00.000Z
+ST-026,Hero Sidoarjo 2,Hero,Jawa Timur,Sidoarjo,"Jl. Sudirman No. 137, Sidoarjo",2026-01-01T00:00:00.000Z
+ST-027,Alfamidi Medan,Alfamidi,Sumatera,Medan,"Jl. Sudirman No. 182, Medan",2026-01-01T00:00:00.000Z
+ST-028,Hypermart Medan 2,Hypermart,Sumatera,Medan,"Jl. Gatot Subroto No. 194, Medan",2026-01-01T00:00:00.000Z
+ST-029,Transmart Palembang,Transmart,Sumatera,Palembang,"Jl. Diponegoro No. 150, Palembang",2026-01-01T00:00:00.000Z
+ST-030,Lottemart Palembang 2,Lottemart,Sumatera,Palembang,"Jl. Gatot Subroto No. 133, Palembang",2026-01-01T00:00:00.000Z
+ST-031,Superindo Pekanbaru,Superindo,Sumatera,Pekanbaru,"Jl. Asia Afrika No. 79, Pekanbaru",2026-01-01T00:00:00.000Z
+ST-032,Giant Pekanbaru 2,Giant,Sumatera,Pekanbaru,"Jl. Merdeka No. 28, Pekanbaru",2026-01-01T00:00:00.000Z
