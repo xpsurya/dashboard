@@ -1,0 +1,27 @@
+{
+  "summary": "Iteration 3 frontend-only testing for the 8 feature-sets requested (live-feed removed, heatmap-click→photo, CSV export menu w/ checklist, Validasi&Audit foto nota/foto absen, Photo Gallery option trim, new Customer Analytic & Product Analytic tabs, Master Products Parent SKU, kiosk & mobile). 100% of acceptance criteria now pass after one minor UI fix. Highlights verified: no live-event-ticker on any tab; heatmap-cell-SPG-001-2026-10-01 opens photo-lightbox with 'Foto Absen Masuk', single-photo prev/next buttons hidden, Escape & close-button both close the lightbox; export-dashboard-button opens export-menu with 4 options & correct row counts (selling 2.209, absen 199, stock 660, audit 1.267), export-select-all toggles, CSV download produced file raw_selling_2026-10-01_sd_2026-10-08.csv with full header incl. Tanggal/TRX ID/SKU/Parent SKU/Qty/Customer ID; PNG & PDF snapshot buttons still present; Photo Gallery categories = Semua/Pajangan A/B/C only (no Absen/Nota); Customer Analytic tab renders all 20 target testids (view, scope-mtd/period, 6 KPIs, nvl-compare/share/daily, value/freq/basket tables, insights, pareto, hour heatmap, top-customer-table+search, store-repeat), customer-empty appears when scope=period with a date that has no trx; Product Analytic tab renders all 15 target testids, companion-sku-select changes companion-list; Master Database (admin) > Products > Tambah shows crud-field-parent_sku; Validasi&Audit (admin) Review queue sales view has 'Foto Nota' header + 22 review-photo-* thumbs opening lightbox 'Foto Nota Penjualan', attendance view has 'Foto Absen' header + 7 thumbs opening 'Foto Absen Masuk', Approve/Update/Delete present; kiosk mode toggles kiosk-progress; mobile 390px no horizontal overflow on customer & product tabs and export-menu fits viewport (width 366, right 378/390). Logged in as admin xp.surya@gmail.com / Admin#2026.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "CustomerAnalytics NvlTable", "issue": "nvl-compare-table had width 572px without an overflow-x container, causing 215px horizontal page overflow at 390px mobile viewport. Fixed by wrapping the table in <div class='overflow-x-auto'> and setting min-w on the table so wide columns scroll in-place instead of spilling the viewport.", "selector": "[data-testid='nvl-compare-table']", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "ReviewQueue.jsx: review-row-* data-testid uses the row index — stable only while list is unchanged. Prefer `review-row-${r.id}` to avoid testid churn after approve/delete.",
+    "CustomerAnalytics / ProductAnalytics: ScopeToggle `period` uses the raw global filter dates; if the user keeps the default single-date today early morning, the Customer tab shows customer-empty which can confuse (no banner explaining the empty state's cause). A one-liner hint ('Ganti ke MTD atau rentang tanggal …') would help.",
+    "exportDashboard CSV builder re-filters data per-click but computes counts on every render (useMemo scoped to filters/data is fine). No real issue but worth noting for performance with >10k rows.",
+    "AttendanceHeatmap: only cells with `c.att?.photo_checkin_url` are rendered as buttons; incomplete-status cells without a photo intentionally remain non-clickable. Verified behaviour matches spec."
+  ],
+  "updated_files": ["/app/admin-dashboard/src/tabs/customer/CustomerAnalytics.jsx"],
+  "success_rate": {"backend": "n/a (skipped per request)", "frontend": "100%"},
+  "test_credentials": "Admin: xp.surya@gmail.com / Admin#2026 (verified) ; Leader: budi.leader@fieldforce.example / Leader#2026 (not re-tested this iteration, worked in iter2).",
+  "seed_data_creation": "None — mock data in-memory.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "To get non-zero rows for CSV exports and Customer/Product analytics, select Date Range in global filter (first-of-month to yesterday) because the default is today's single date and today's mock sales/attendance may be empty before noon. Admin login persists across tabs via sessionStorage. mobile 390px is now clean on customer & product tabs after wrapping nvl-compare-table in overflow-x-auto.",
+  "rca_of_the_issue": "RCA (mobile Customer tab horizontal overflow): The NvlTable rendered a 3-column table (Metrik / NEW / LOYAL) inside the nvl-compare-card without a horizontal scroll wrapper. At 390px the table's content minimum width (~572px, driven by its long first column labels like 'SKU Favorit (by value)') pushed the whole page scrollWidth to 605px → 215px overflow. Mitigation: wrap the table in a `<div className='overflow-x-auto'>` and set `min-w-[520px]` on the table so overflow is confined to the card. Verified post-fix: scrollWidth===clientWidth===390 on both Customer & Product tabs."
+}

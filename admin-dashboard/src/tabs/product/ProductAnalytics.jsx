@@ -61,7 +61,7 @@ export default function ProductAnalytics() {
       </div>
 
       {!orders.length ? (
-        <div className="card"><EmptyState text="Belum ada transaksi pada periode ini." testId="product-empty" /></div>
+        <div className="card"><EmptyState text="Belum ada transaksi pada periode ini — pilih MTD atau gunakan Date Range di filter global." testId="product-empty" /></div>
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-3 2xl:grid-cols-6">

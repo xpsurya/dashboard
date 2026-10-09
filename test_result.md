@@ -101,3 +101,21 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+user_problem_statement: "Field Force Command Center (Vite app at /app/admin-dashboard, served on :3000, MOCK mode). Iteration 3 requests: 1) remove live feed 2) heatmap cell click shows foto absen 3) Export CSV checklist raw selling/absen/stock/validasi-audit 4) Review queue shows foto nota / foto absen enlargeable 5) Photo gallery remove foto absen masuk & foto nota 6) Customer Analytic tab 7) Product Analytic tab"
+frontend:
+  - task: "Iteration 3 features (7 items)"
+    implemented: true
+    working: "NA"
+    file: "/app/admin-dashboard/src"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented all 7 items; self-verified with screenshots"
+test_plan:
+  current_focus:
+    - "Iteration 3 features (7 items)"
+  test_all: false
+  test_priority: "high_first"

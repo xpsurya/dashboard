@@ -28,7 +28,8 @@ function NvlTable({ nvl }) {
   const ix = L.spend && N.spend ? L.spend / N.spend : 0;
   return (
     <div>
-      <table className="w-full border-separate border-spacing-0" data-testid="nvl-compare-table">
+      <div className="overflow-x-auto">
+      <table className="w-full min-w-[520px] border-separate border-spacing-0" data-testid="nvl-compare-table">
         <thead>
           <tr>
             <th className="th">Metrik</th>
@@ -46,6 +47,7 @@ function NvlTable({ nvl }) {
           ))}
         </tbody>
       </table>
+      </div>
       {ix > 0 && (
         <p className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100" data-testid="nvl-spend-index">
           1 Loyal customer bernilai <b>{ix.toFixed(1)}x</b> lipat dibanding 1 New customer (avg spend).
@@ -131,7 +133,7 @@ export default function CustomerAnalytics() {
       </div>
 
       {!orders.length ? (
-        <div className="card"><EmptyState text="Belum ada transaksi pada periode ini." testId="customer-empty" /></div>
+        <div className="card"><EmptyState text="Belum ada transaksi pada periode ini — pilih MTD atau gunakan Date Range di filter global." testId="customer-empty" /></div>
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-3 2xl:grid-cols-6">
