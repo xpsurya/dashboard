@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 const BADGE = {
@@ -79,7 +80,7 @@ export function Modal({ open, title, onClose, children, footer, size = 'md', tes
   }, [open, onClose]);
   if (!open) return null;
   const w = { sm: 'max-w-md', md: 'max-w-2xl', lg: 'max-w-5xl' }[size];
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 md:p-6">
       <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} />
       <div className={`fade-up relative flex max-h-[92vh] w-full ${w} flex-col rounded-2xl border border-slate-700 bg-surface shadow-2xl`} data-testid={testId}>
@@ -92,7 +93,8 @@ export function Modal({ open, title, onClose, children, footer, size = 'md', tes
         <div className="overflow-y-auto px-5 py-4">{children}</div>
         {footer && <div className="flex flex-wrap justify-end gap-2 border-t border-slate-700 px-5 py-3">{footer}</div>}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

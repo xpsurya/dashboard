@@ -5,6 +5,8 @@ import { ToastProvider, useToast } from './components/common/Toast';
 import { TopNav } from './components/layout/TopNav';
 import { FilterBar } from './components/layout/FilterBar';
 import { TabNav } from './components/layout/TabNav';
+import { LiveTicker } from './components/layout/LiveTicker';
+import { AuthProvider } from './context/AuthContext';
 import { useKiosk } from './hooks/useKiosk';
 import { exportDashboard } from './lib/exportDashboard';
 import config from './lib/config';
@@ -62,6 +64,7 @@ function Shell() {
       <TopNav kiosk={kiosk} onToggleKiosk={toggleKiosk} onExport={onExport} exporting={exporting} />
       <FilterBar />
       <TabNav tabs={TABS} active={tab} onChange={setTab} kiosk={kiosk ? kioskState : null} />
+      <LiveTicker />
       {status.error && (
         <div className="mx-4 mt-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200 md:mx-6" data-testid="data-error-banner">
           Gagal memuat data dari Supabase: {status.error}
@@ -83,9 +86,11 @@ function Shell() {
 export default function App() {
   return (
     <ToastProvider>
-      <DashboardProvider>
-        <Shell />
-      </DashboardProvider>
+      <AuthProvider>
+        <DashboardProvider>
+          <Shell />
+        </DashboardProvider>
+      </AuthProvider>
     </ToastProvider>
   );
 }

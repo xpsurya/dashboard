@@ -1,20 +1,14 @@
 import { useState } from 'react';
 import { LockKeyhole } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { AccessGate } from '../../components/auth/AccessGate';
 import { MASTER_TABLES } from '../../lib/schema';
 import { BulkExcelPanel } from './BulkExcelPanel';
 import { MasterTable } from './MasterTable';
-import { GATE_KEY, PasswordGate } from './PasswordGate';
 
-export default function MasterDatabase() {
-  const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem(GATE_KEY) === '1');
+function MasterContent() {
+  const { signOut } = useAuth();
   const [table, setTable] = useState('manpower');
-  if (!unlocked) return <PasswordGate onUnlock={() => setUnlocked(true)} />;
-
-  const lock = () => {
-    sessionStorage.removeItem(GATE_KEY);
-    setUnlocked(false);
-  };
-
   return (
     <div className="space-y-5" data-testid="master-database-view">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -25,10 +19,23 @@ export default function MasterDatabase() {
             </button>
           ))}
         </div>
-        <button className="btn-ghost" onClick={lock} data-testid="master-db-lock-button"><LockKeyhole className="h-4 w-4" /> Kunci Master DB</button>
+        <button className="btn-ghost" onClick={signOut} data-testid="master-db-lock-button"><LockKeyhole className="h-4 w-4" /> Logout & Kunci</button>
       </div>
       <BulkExcelPanel table={table} />
       <MasterTable key={table} table={table} />
     </div>
+  );
+}
+
+export default function MasterDatabase() {
+  return (
+    <AccessGate
+      roles={['admin']}
+      title="Master Database — Khusus Admin"
+      description="Data master (Manpower, Stores, Products, Coverages) hanya dapat dikelola oleh akun ber-role ADMIN."
+      testId="master-db-gate"
+    >
+      <MasterContent />
+    </AccessGate>
   );
 }

@@ -5,6 +5,7 @@
   "accentColor": "#3182CE",
   "kioskIntervalSeconds": 30,
   "autoRefreshSeconds": 60,
+  "mockRealtimeSeconds": 15,
   "standardWorkMinutes": 480,
   "nearEd": { "criticalDays": 30, "warningDays": 60 },
   "discipline": { "base": 100, "leaderUpdate": -5, "leaderDelete": -25, "missedCheckout": -10 },

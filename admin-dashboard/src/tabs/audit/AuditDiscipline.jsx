@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Award, ClipboardCheck, ShieldAlert, TimerOff } from 'lucide-react';
 import { useDashboard } from '../../context/DashboardContext';
 import { KpiCard } from '../../components/common/ui';
+import { AccessGate } from '../../components/auth/AccessGate';
 import { disciplineScores, leaderSla } from '../../lib/auditMetrics';
 import { num } from '../../lib/format';
 import { DisciplineScore } from './DisciplineScore';
@@ -24,7 +25,14 @@ export default function AuditDiscipline() {
         <KpiCard label="SPG Critical (< 60)" value={num(scores.filter((s) => s.score < 60).length)} sub="Perlu coaching / SP" icon={ShieldAlert} tone="danger" testId="kpi-spg-critical" delay={80} />
         <KpiCard label="Leader Overdue" value={`${leaders.filter((l) => l.isOverdue).length} / ${leaders.length}`} sub="Gap validasi > 24 jam" icon={TimerOff} tone="danger" testId="kpi-leader-overdue" delay={120} />
       </div>
-      <ReviewQueue />
+      <AccessGate
+        roles={['admin', 'leader']}
+        title="Leader Review Queue — Login Diperlukan"
+        description="Antrian validasi transaksi & absensi hanya untuk akun LEADER (SPG binaannya) dan ADMIN."
+        testId="review-queue-gate"
+      >
+        <ReviewQueue />
+      </AccessGate>
       <div className="grid gap-5 2xl:grid-cols-2">
         <DisciplineScore scores={scores} search={filters.search} />
         <LeaderSla leaders={leaders} />

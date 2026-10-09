@@ -6,7 +6,7 @@ React (Vite) · Tailwind CSS · Lucide Icons · Apache ECharts · @supabase/supa
 ```bash
 cd admin-dashboard
 yarn install --ignore-engines
-cp .env.example .env   # isi VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_MASTER_DB_PASSWORD
+cp .env.example .env   # isi VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
 yarn dev               # http://localhost:3000
 yarn build             # output: dist/
 ```
@@ -25,6 +25,16 @@ Ubah `config.json` (brandName, primaryColor, interval kiosk, auto-refresh, amban
 - `src/components` — layout (TopNav, FilterBar, TabNav) & UI primitives (Card, KpiCard, Modal, EChart)
 - `src/tabs` — selling, absen, stock, photos, master, audit
 
+## Login Leader / Admin (Supabase Auth)
+1. Authentication → Providers → Email: aktif. Matikan "Allow new users to sign up".
+2. Authentication → Users → Add user untuk tiap admin/leader.
+3. Jalankan ulang `schema.sql` (seed role admin untuk xp.surya@gmail.com) dan tambahkan baris `user_roles` untuk leader. Email leader harus sama dengan `manpower.leader_email`.
+4. Master Database = role `admin`. Leader Review Queue = role `leader` (hanya SPG binaannya) atau `admin`.
+
+## Realtime
+`schema.sql` menambahkan `attendance_logs` & `sales_orders` ke publication `supabase_realtime`. Dashboard subscribe `postgres_changes` dan me-refresh data otomatis + menampilkan Live Feed.
+
 ## Catatan keamanan
-- Password gate Master Database dicek di browser (`VITE_MASTER_DB_PASSWORD`), bukan proteksi server.
-- Policy RLS di `schema.sql` membuka akses anon penuh. Untuk production gunakan Supabase Auth + policy per role.
+- Hak tulis ditegakkan oleh RLS (bukan hanya UI). Baca data dashboard masih terbuka untuk anon (layar TV tanpa login), termasuk data pembeli.
+- Insert absen/sales/stok terbuka untuk anon agar aplikasi mobile SPG bisa mengirim data.
+- Variabel `VITE_MOCK_*` hanya dipakai di mode demo (MOCK) dan diabaikan saat Supabase terhubung.

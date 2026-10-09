@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Check, ClipboardCheck, Pencil, Trash2 } from 'lucide-react';
 import { useDashboard } from '../../context/DashboardContext';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/common/Toast';
 import { Badge, Card, EmptyState } from '../../components/common/ui';
 import { validateRecord } from '../../lib/validationActions';
@@ -22,7 +23,9 @@ function Actions({ id, busy, onApprove, onEdit, onDelete }) {
 
 export function ReviewQueue() {
   const { data, spgMap, storeMap, geoOk, filters, refresh } = useDashboard();
+  const { user } = useAuth();
   const toast = useToast();
+  const isAdmin = user.role === 'admin';
   const [kind, setKind] = useState('sales');
   const [editing, setEditing] = useState(null);
   const [deleting, setDeleting] = useState(null);
@@ -31,20 +34,21 @@ export function ReviewQueue() {
   const pending = useMemo(() => {
     const scope = (r) => {
       const s = spgMap.get(r.spg_code);
-      return s && geoOk(s) && matches(filters.search, r.spg_code, s.name, storeMap.get(r.store_code)?.store_name, r.trx_id);
+      const mine = isAdmin || String(s?.leader_email ?? '').toLowerCase() === String(user.email).toLowerCase();
+      return s && mine && geoOk(s) && matches(filters.search, r.spg_code, s.name, storeMap.get(r.store_code)?.store_name, r.trx_id);
     };
     const sort = (a, b) => String(a.email_sent_at).localeCompare(String(b.email_sent_at));
     return {
       sales: data.sales.filter((o) => o.status === 'PENDING' && scope(o)).sort(sort),
       attendance: data.attendance.filter((a) => a.validation_status === 'PENDING' && scope(a)).sort(sort),
     };
-  }, [data.sales, data.attendance, spgMap, storeMap, geoOk, filters.search]);
+  }, [data.sales, data.attendance, spgMap, storeMap, geoOk, filters.search, isAdmin, user.email]);
   const rows = pending[kind];
 
   const run = async (record, action, opts = {}) => {
     setBusyId(record.id);
     try {
-      await validateRecord(kind, record, action, { ...opts, leader: spgMap.get(record.spg_code) });
+      await validateRecord(kind, record, action, { ...opts, leader: { leader_name: user.name, leader_email: user.email } });
       toast(`${record.trx_id ?? record.spg_code}: ${action === 'APPROVE' ? 'Approved' : action === 'UPDATE' ? 'Updated (−5 pts)' : 'Deleted / fraud flagged (−25 pts)'}`);
       await refresh();
     } catch (e) {
@@ -64,7 +68,7 @@ export function ReviewQueue() {
     : ['Tanggal', 'SPG', 'Store', 'Check-in', 'Checkout', 'Durasi', 'Submitted', 'Menunggu', 'Aksi'];
 
   return (
-    <Card title="Leader Review Queue" subtitle={`${pending.sales.length} transaksi & ${pending.attendance.length} absensi menunggu validasi`} icon={ClipboardCheck} bodyClass="p-0" testId="leader-review-queue"
+    <Card title="Leader Review Queue" subtitle={`${pending.sales.length} transaksi & ${pending.attendance.length} absensi menunggu validasi · ${isAdmin ? 'semua SPG (admin)' : 'SPG binaan Anda'}`} icon={ClipboardCheck} bodyClass="p-0" testId="leader-review-queue"
       actions={
         <div className="flex rounded-lg border border-slate-700 bg-[#111a35] p-0.5">
           {[['sales', `Transaksi (${pending.sales.length})`], ['attendance', `Absensi (${pending.attendance.length})`]].map(([k, l]) => (

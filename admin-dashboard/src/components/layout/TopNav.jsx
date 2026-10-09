@@ -2,6 +2,18 @@ import { useState } from 'react';
 import { Download, FileImage, FileText, LoaderCircle, Radar, RefreshCw, Tv } from 'lucide-react';
 import { useDashboard } from '../../context/DashboardContext';
 import config from '../../lib/config';
+import { isMock } from '../../lib/supabase';
+import { UserMenu } from '../auth/UserMenu';
+
+function RealtimePill({ status }) {
+  const on = status === 'SUBSCRIBED';
+  return (
+    <span className={`hidden items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold tracking-wider sm:inline-flex ${on ? 'border-emerald-500/40 text-emerald-300' : 'border-amber-500/40 text-amber-300'}`} data-testid="realtime-status-indicator">
+      <span className={`h-1.5 w-1.5 rounded-full ${on ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+      {on ? `REALTIME${isMock ? ' (SIMULASI)' : ''}` : `REALTIME ${status}`}
+    </span>
+  );
+}
 
 const CONN = {
   mock: { dot: 'bg-amber-400 text-amber-400', text: 'DEMO MODE · MOCK DATA', ring: 'border-amber-500/40 bg-amber-500/10 text-amber-200' },
@@ -44,7 +56,7 @@ function ExportMenu({ onExport, exporting }) {
 }
 
 export function TopNav({ kiosk, onToggleKiosk, onExport, exporting }) {
-  const { status, autoRefresh, setAutoRefresh, refresh } = useDashboard();
+  const { status, realtime, autoRefresh, setAutoRefresh, refresh } = useDashboard();
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-ink/95 backdrop-blur-xl">
       <div className="flex flex-wrap items-center gap-2.5 px-4 py-3 md:gap-3 md:px-6">
@@ -58,6 +70,7 @@ export function TopNav({ kiosk, onToggleKiosk, onExport, exporting }) {
           </div>
         </div>
         <ConnectionPill connection={status.connection} />
+        <RealtimePill status={realtime.status} />
         <div className="text-xs text-slate-400" data-testid="last-sync-timestamp">
           Last Sync{' '}
           <span className="font-mono text-slate-200">{status.lastSync ? status.lastSync.toLocaleTimeString('id-ID') : '—'}</span>
@@ -81,6 +94,7 @@ export function TopNav({ kiosk, onToggleKiosk, onExport, exporting }) {
           <span className="hidden md:inline">{kiosk ? 'Exit Kiosk' : 'TV / Kiosk Mode'}</span>
         </button>
         <ExportMenu onExport={onExport} exporting={exporting} />
+        <UserMenu />
       </div>
     </header>
   );

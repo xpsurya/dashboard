@@ -151,17 +151,102 @@ select d::date, extract(dow from d) <> 0, case when extract(dow from d) = 0 then
 from generate_series(date_trunc('year', now()), date_trunc('year', now()) + interval '1 year' - interval '1 day', interval '1 day') d
 on conflict (work_date) do nothing;
 
+-- AUTH ROLES ----------------------------------------------------------------
+-- Akun dibuat admin di Supabase Dashboard → Authentication → Users (matikan "Allow new users to sign up").
+create table if not exists public.user_roles (
+  user_id      uuid primary key references auth.users (id) on delete cascade,
+  role         text not null check (role in ('admin','leader')),
+  display_name text,
+  created_at   timestamptz not null default now()
+);
+
+create or replace function public.app_role() returns text
+language sql security definer set search_path = public stable as $$
+  select role from public.user_roles where user_id = (select auth.uid())
+$$;
+
+create or replace function public.is_admin() returns boolean
+language sql security definer set search_path = public stable as $$
+  select coalesce(public.app_role() = 'admin', false)
+$$;
+
+-- Leader hanya boleh memvalidasi SPG yang manpower.leader_email = email login-nya
+create or replace function public.is_leader_of(target_spg text) returns boolean
+language sql security definer set search_path = public stable as $$
+  select coalesce(public.app_role() = 'leader', false) and exists (
+    select 1 from public.manpower m
+    where m.spg_code = target_spg and lower(m.leader_email) = lower(auth.jwt() ->> 'email')
+  )
+$$;
+
+revoke all on function public.app_role() from public;
+revoke all on function public.is_admin() from public;
+revoke all on function public.is_leader_of(text) from public;
+grant execute on function public.app_role(), public.is_admin(), public.is_leader_of(text) to authenticated;
+
 -- ROW LEVEL SECURITY ------------------------------------------------------
--- WARNING: policy di bawah memberi akses baca/tulis penuh ke role anon (sesuai arsitektur
--- direct read/write dari browser). Untuk production, ganti dengan policy berbasis Supabase Auth.
+-- Baca: anon + authenticated (layar TV / kiosk tanpa login).
+-- Tulis master data: hanya ADMIN. Validasi: ADMIN atau LEADER pemilik SPG.
+-- Insert transaksi lapangan (absen, sales, stok) tetap terbuka untuk aplikasi mobile SPG.
 do $$
-declare t text;
+declare
+  t text;
+  p record;
+  all_tables text[] := array['stores','manpower','products','coverages','calendar_workdays','attendance_logs',
+    'store_inventory','sales_orders','sales_order_items','discipline_audit_logs','leader_validations','user_roles'];
 begin
-  foreach t in array array['stores','manpower','products','coverages','calendar_workdays','attendance_logs',
-    'store_inventory','sales_orders','sales_order_items','discipline_audit_logs','leader_validations']
-  loop
+  foreach t in array all_tables loop
     execute format('alter table public.%I enable row level security', t);
-    execute format('drop policy if exists "anon_full_access" on public.%I', t);
-    execute format('create policy "anon_full_access" on public.%I for all to anon, authenticated using (true) with check (true)', t);
+    for p in select policyname from pg_policies where schemaname = 'public' and tablename = t loop
+      execute format('drop policy %I on public.%I', p.policyname, t);
+    end loop;
+    if t <> 'user_roles' then
+      execute format('create policy "read_all" on public.%I for select to anon, authenticated using (true)', t);
+    end if;
+  end loop;
+
+  foreach t in array array['stores','manpower','products','coverages','calendar_workdays'] loop
+    execute format('create policy "admin_write" on public.%I for all to authenticated using (public.is_admin()) with check (public.is_admin())', t);
+  end loop;
+
+  foreach t in array array['attendance_logs','sales_orders','sales_order_items','store_inventory'] loop
+    execute format('create policy "field_app_insert" on public.%I for insert to anon, authenticated with check (true)', t);
+    execute format('create policy "admin_delete" on public.%I for delete to authenticated using (public.is_admin())', t);
+  end loop;
+
+  foreach t in array array['attendance_logs','sales_orders'] loop
+    execute format('create policy "validator_update" on public.%I for update to authenticated using (public.is_admin() or public.is_leader_of(spg_code)) with check (public.is_admin() or public.is_leader_of(spg_code))', t);
+  end loop;
+
+  foreach t in array array['sales_order_items','store_inventory'] loop
+    execute format('create policy "admin_update" on public.%I for update to authenticated using (public.is_admin()) with check (public.is_admin())', t);
+  end loop;
+
+  foreach t in array array['leader_validations','discipline_audit_logs'] loop
+    execute format('create policy "validator_insert" on public.%I for insert to authenticated with check (public.is_admin() or public.is_leader_of(spg_code))', t);
+    execute format('create policy "admin_modify" on public.%I for update to authenticated using (public.is_admin()) with check (public.is_admin())', t);
+    execute format('create policy "admin_remove" on public.%I for delete to authenticated using (public.is_admin())', t);
   end loop;
 end $$;
+
+create policy "own_or_admin_read" on public.user_roles for select to authenticated
+  using (user_id = (select auth.uid()) or public.is_admin());
+create policy "admin_manage_roles" on public.user_roles for all to authenticated
+  using (public.is_admin()) with check (public.is_admin());
+
+-- REALTIME ------------------------------------------------------------------
+do $$
+begin
+  begin alter publication supabase_realtime add table public.attendance_logs; exception when duplicate_object then null; end;
+  begin alter publication supabase_realtime add table public.sales_orders; exception when duplicate_object then null; end;
+end $$;
+
+-- SEED ROLE ADMIN (jalankan setelah user dibuat di Authentication → Users) ---
+insert into public.user_roles (user_id, role, display_name)
+select id, 'admin', 'Owner Admin' from auth.users where lower(email) = 'xp.surya@gmail.com'
+on conflict (user_id) do update set role = excluded.role;
+
+-- Contoh role leader (email harus sama dengan manpower.leader_email):
+-- insert into public.user_roles (user_id, role, display_name)
+-- select id, 'leader', 'Nama Leader' from auth.users where lower(email) = 'leader@company.co.id'
+-- on conflict (user_id) do update set role = excluded.role;

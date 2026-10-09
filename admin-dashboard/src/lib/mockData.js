@@ -1,5 +1,6 @@
 import { addDays, eachDay, monthBounds, parseDate, toISODate } from './dates';
 import { PK } from './schema';
+import config from './config';
 
 let seed = 20261009;
 const rng = () => {
@@ -202,6 +203,44 @@ function generate() {
 
 let tables = null;
 const db = () => (tables ??= generate());
+let simN = 900000;
+
+// Simulated realtime feed: new check-in or new transaction at "now"
+function simulate() {
+  const t = db();
+  const now = new Date();
+  const today = toISODate(now);
+  const iso = now.toISOString();
+  const active = t.manpower.filter((m) => m.status === 'ACTIVE');
+  const present = new Set(t.attendance_logs.filter((a) => a.work_date === today).map((a) => a.spg_code));
+  const absent = active.filter((m) => !present.has(m.spg_code));
+  simN += 1;
+  if (absent.length && (!present.size || rng() < 0.35)) {
+    const spg = pick(absent);
+    const rec = {
+      id: `ATT-L${simN}`, spg_code: spg.spg_code, store_code: spg.store_code, work_date: today, checkin_time: iso,
+      checkout_time: null, work_duration_minutes: null, photo_checkin_url: PHOTOS.checkin[simN % 2],
+      photo_display_a_url: PHOTOS.a, photo_display_b_url: PHOTOS.b, photo_display_c_url: PHOTOS.c,
+      validation_status: 'PENDING', email_sent_at: iso, validated_at: null, created_at: iso,
+    };
+    t.attendance_logs.push(rec);
+    return { table: 'attendance_logs', type: 'INSERT', record: rec };
+  }
+  const code = pick([...present]);
+  const spg = active.find((m) => m.spg_code === code);
+  if (!spg) return null;
+  const p = pick(PRODUCTS);
+  const qty = between(1, 6);
+  const trxId = `TRX-${today.replaceAll('-', '')}-${spg.spg_code.slice(4)}-L${simN}`;
+  const rec = {
+    id: `SO-L${simN}`, trx_id: trxId, spg_code: spg.spg_code, store_code: spg.store_code, trx_date: today,
+    buyer_name: pick(BUYERS), buyer_phone: `08${between(1100000000, 9899999999)}`, total_omzet: qty * p.price,
+    receipt_photo_url: PHOTOS.nota, status: 'PENDING', validated_at: null, created_at: iso, email_sent_at: iso,
+    sales_order_items: [{ id: `${trxId}-1`, trx_id: trxId, sku: p.sku, product_name: p.product_name, qty, price: p.price, subtotal: qty * p.price }],
+  };
+  t.sales_orders.push(rec);
+  return { table: 'sales_orders', type: 'INSERT', record: rec };
+}
 
 export const mockDb = {
   list(table, range) {
@@ -228,6 +267,14 @@ export const mockDb = {
   remove(table, pk, id) {
     db()[table] = db()[table].filter((r) => String(r[pk]) !== String(id));
     return [];
+  },
+  subscribe(onEvent, onStatus) {
+    onStatus('SUBSCRIBED');
+    const id = setInterval(() => {
+      const e = simulate();
+      if (e) onEvent(e);
+    }, config.mockRealtimeSeconds * 1000);
+    return () => clearInterval(id);
   },
   pk: PK,
 };
