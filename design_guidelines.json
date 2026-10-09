@@ -1,0 +1,127 @@
+{
+  "project_name": "Field Force Command Center",
+  "app_type": "enterprise_dashboard",
+  "theme": {
+    "mode": "dark_slate_hybrid",
+    "primary_color": "#1A365D",
+    "primary_hover": "#2A4365",
+    "accent_color": "#3182CE",
+    "success_color": "#10B981",
+    "warning_color": "#F59E0B",
+    "danger_color": "#EF4444",
+    "background_dark": "#0B132B",
+    "surface_card": "#1C2541",
+    "surface_elevated": "#253256",
+    "border_color": "rgba(255, 255, 255, 0.12)",
+    "text_primary": "#F8FAFC",
+    "text_secondary": "#94A3B8",
+    "text_muted": "#64748B"
+  },
+  "typography": {
+    "font_family_heading": "Outfit, sans-serif",
+    "font_family_body": "Plus Jakarta Sans, sans-serif",
+    "font_family_mono": "JetBrains Mono, monospace",
+    "h1": "text-2xl font-bold tracking-tight text-slate-50 md:text-3xl",
+    "h2": "text-xl font-semibold tracking-tight text-slate-100 md:text-2xl",
+    "h3": "text-lg font-semibold text-slate-200",
+    "kpi_value": "text-3xl font-extrabold tracking-tight text-white font-mono",
+    "body": "text-sm text-slate-300 leading-relaxed",
+    "label": "text-xs font-semibold uppercase tracking-wider text-slate-400"
+  },
+  "visual_enhancers": {
+    "card_style": "bg-[#1C2541]/90 backdrop-blur-md border border-slate-700/60 rounded-xl shadow-lg hover:border-slate-500/50 transition-all duration-200",
+    "kpi_card_style": "bg-gradient-to-br from-[#1C2541] to-[#111827] border border-slate-700/80 rounded-xl p-5 shadow-xl relative overflow-hidden",
+    "table_sticky_header": "sticky top-0 z-20 bg-[#1C2541] backdrop-blur-md border-b border-slate-700 font-semibold text-slate-200 shadow-sm",
+    "table_frozen_left_col": "sticky left-0 z-10 bg-[#1C2541] border-r border-slate-700 font-medium text-slate-100 shadow-sm",
+    "glass_nav": "bg-[#0B132B]/90 backdrop-blur-xl border-b border-slate-800/80 sticky top-0 z-50 px-6 py-3.5 shadow-2xl"
+  },
+  "components": {
+    "navigation_bar": {
+      "path": "src/components/Navigation.js",
+      "features": ["Brand Title", "Live Status Connection Pulse", "Last Data Sync Timestamp", "Auto-Refresh Toggle", "Global Filter Bar (Region/Area, Single Date/Range, Search SPG/Store/SKU)", "TV Kiosk Mode Button (30s auto-cycle)", "Export PNG/PDF Action"]
+    },
+    "selling_performance": {
+      "path": "src/components/SellingPerformance.js",
+      "kpis": ["Total National Omzet IDR", "Target vs Achievement %", "Timerate %", "Unique Customers", "Total Transactions", "Active SPGs vs Master Manpower", "Count SPGs Over TR%"],
+      "charts": ["ECharts Daily Performance Trend vs Timerate (Line)", "ECharts Horizontal Bar SKU Contribution", "ECharts Bar Achievement % by Region"],
+      "table": "SPG performance matrix with sticky header & frozen left column, green cell if Ach>=100%, red if below target"
+    },
+    "absen_performance": {
+      "path": "src/components/AbsenPerformance.js",
+      "kpis": ["Attendance Rate %", "Check-in Count", "Checkout Count", "Absent Count"],
+      "matrix": "1-Month Calendar Heatmap Matrix (Dates 1-31 per SPG: Present/Incomplete/Absent)",
+      "table": "Attendance Log Table with duration formatted as 'X Jam Y Menit' with warning callout for < 8h duration"
+    },
+    "stock_tracking": {
+      "path": "src/components/StockTracking.js",
+      "badges": {
+        "red": "RED <= 30 Days (Critical ED)",
+        "yellow": "YELLOW 31-60 Days (Warning)",
+        "green": "GREEN > 60 Days (Safe)"
+      },
+      "features": ["Store Inventory Matrix across SKUs", "Toggle Filter: Tampilkan Hanya Stok Near-ED"]
+    },
+    "photo_gallery": {
+      "path": "src/components/PhotoGallery.js",
+      "categories": ["Semua Foto", "Foto Absen Masuk", "Foto Pajangan A", "Foto Pajangan B", "Foto Pajangan C", "Foto Nota Penjualan"],
+      "features": ["Lightbox modal viewer", "Filter by SPG, Store, and Date Range", "Responsive grid card view"]
+    },
+    "master_database": {
+      "path": "src/components/MasterDatabase.js",
+      "security": "Password gate before access",
+      "sub_tabs": ["Manpower", "Stores", "Products", "Coverages"],
+      "features": ["CRUD Modal for single entries", "Bulk Excel Template Download & Upload", "Summary report of AKSI (NEW/UPDATE/DELETE)"]
+    },
+    "audit_discipline": {
+      "path": "src/components/AuditDiscipline.js",
+      "features": [
+        "Leader Review Queue (Approve / Update / Delete)",
+        "SPG Discipline Score Engine (Base 100, -5 for update, -25 for delete, -10 for missed checkout)",
+        "Leader SLA Tracker (validated_at - email_sent_at, flag Overdue if > 24 hours)"
+      ]
+    }
+  },
+  "data_testid_rules": {
+    "requirement": "ALL interactive elements (buttons, inputs, select dropdowns, tab triggers, modal toggles, table rows, card items, header controls) MUST include explicit data-testid attributes in kebab-case format.",
+    "examples": [
+      "data-testid=\"global-filter-region-select\"",
+      "data-testid=\"kiosk-mode-toggle-button\"",
+      "data-testid=\"export-pdf-button\"",
+      "data-testid=\"selling-performance-tab\"",
+      "data-testid=\"near-ed-only-toggle\"",
+      "data-testid=\"master-db-password-input\"",
+      "data-testid=\"spg-performance-table-row-0\"",
+      "data-testid=\"photo-lightbox-close-button\""
+    ]
+  },
+  "image_urls": [
+    {
+      "category": "retail_store_display",
+      "url": "https://images.unsplash.com/photo-1583258292688-d0213dc5a3a8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzN8MHwxfHNlYXJjaHw0fHxzdXBlcm1hcmtldCUyMHNoZWxmJTIwcmV0YWlsJTIwc3RvcmUlMjBwcm9kdWN0cyUyMHNhbGVzJTIwYWdlbnR8ZW58MHx8fHwxNzkxNTA1MDEzfDA&ixlib=rb-4.1.0&q=85",
+      "description": "Shelves of produce and retail display for Foto Pajangan A"
+    },
+    {
+      "category": "supermarket_aisle",
+      "url": "https://images.unsplash.com/photo-1578916171728-46686eac8d58?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzN8MHwxfHNlYXJjaHwyfHxzdXBlcm1hcmtldCUyMHNoZWxmJTIwcmV0YWlsJTIwc3RvcmUlMjBwcm9kdWN0cyUyMHNhbGVzJTIwYWdlbnR8ZW58MHx8fHwxNzkxNTA1MDEzfDA&ixlib=rb-4.1.0&q=85",
+      "description": "Store aisle layout for Foto Pajangan B"
+    },
+    {
+      "category": "store_stocked_shelves",
+      "url": "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzN8MHwxfHNlYXJjaHwxfHxzdXBlcm1hcmtldCUyMHNoZWxmJTIwcmV0YWlsJTIwc3RvcmUlMjBwcm9kdWN0cyUyMHNhbGVzJTIwYWdlbnR8ZW58MHx8fHwxNzkxNTA1MDEzfDA&ixlib=rb-4.1.0&q=85",
+      "description": "Supermarket shelf inventory matrix verification photo"
+    },
+    {
+      "category": "store_checkout_nota",
+      "url": "https://images.unsplash.com/photo-1670684684445-a4504dca0bbc?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzN8MHwxfHNlYXJjaHwzfHxzdXBlcm1hcmtldCUyMHNoZWxmJTIwcmV0YWlsJTIwc3RvcmUlMjBwcm9kdWN0cyUyMHNhbGVzJTIwYWdlbnR8ZW58MHx8fHwxNzkxNTA1MDEzfDA&ixlib=rb-4.1.0&q=85",
+      "description": "Retail checkout store aisle for Foto Nota Penjualan"
+    }
+  ],
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "Do NOT use transparent background on dropdowns, modals, popovers, or floating headers. Use solid slate or heavy backdrop-blur with minimum bg-[#1C2541]/95.",
+    "Ensure contrast ratios meet WCAG AA / APCA guidelines with bright text (#F8FAFC, #E2E8F0) over dark slate backgrounds.",
+    "Use high-density layout for data tables: clear borders, zebra-striping, frozen headers/left columns, and explicit status badges.",
+    "Language style: Mix Indonesian operational labels ('Total Omzet National IDR', 'Timerate %', 'Foto Absen Masuk', 'Foto Pajangan', 'Foto Nota Penjualan', 'Tampilkan Hanya Stok Near-ED', 'Poin Kedisiplinan SPG') with standard English terminology.",
+    "All interactive elements MUST have data-testid for automated end-to-end testing.",
+    "Kiosk mode auto-cycles through active dashboard tabs every 30 seconds with a countdown progress indicator."
+  ]
+}
