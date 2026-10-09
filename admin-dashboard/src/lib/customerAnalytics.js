@@ -38,10 +38,27 @@ export const FREQ_BUCKETS = [
 export const BASKET_BUCKETS = ['1 SKU', '2 SKU', '3 SKU', '4 SKU', '5+ SKU'];
 const DAYS = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 
+// --- RFM segmentation (Recency × Frequency × Monetary, ambang adaptif terhadap panjang periode)
+export const SEGMENTS = [
+  { id: 'CHAMPIONS', label: 'Champions', color: '#10B981', desc: 'Sering belanja, baru saja, nilai tinggi — jaga & apresiasi' },
+  { id: 'LOYAL', label: 'Loyal', color: '#3182CE', desc: 'Belanja berulang dan masih aktif' },
+  { id: 'NEW_POTENTIAL', label: 'New & Potensial', color: '#8B5CF6', desc: 'Baru / jarang belanja — besarkan lewat cross-sell' },
+  { id: 'AT_RISK', label: 'At Risk', color: '#F59E0B', desc: 'Dulu bernilai / aktif, sekarang mulai menghilang — win-back segera' },
+  { id: 'HIBERNATING', label: 'Hibernating', color: '#EF4444', desc: 'Lama tidak belanja & jarang — kontak ulang / promo reaktivasi' },
+];
+export const SEGMENT_BY_ID = Object.fromEntries(SEGMENTS.map((s) => [s.id, s]));
+
+const quantile = (vals, q) => {
+  if (!vals.length) return 0;
+  const s = [...vals].sort((a, b) => a - b);
+  return s[Math.min(s.length - 1, Math.max(0, Math.ceil(q * s.length) - 1))];
+};
+const dayDiff = (a, b) => Math.round((new Date(`${a}T00:00:00`) - new Date(`${b}T00:00:00`)) / 86400000);
+
 const skuCount = (o) => new Set((o.sales_order_items || []).map((i) => i.sku || i.product_name)).size;
 const qtyOf = (o) => (o.sales_order_items || []).reduce((s, i) => s + (Number(i.qty) || 0), 0);
 
-export function customerAnalytics(orders, { spgMap, storeMap }) {
+export function customerAnalytics(orders, { spgMap, storeMap, scopeStart, scopeEnd }) {
   const map = new Map();
   orders.forEach((o) => {
     const key = customerKey(o);
@@ -63,6 +80,38 @@ export function customerAnalytics(orders, { spgMap, storeMap }) {
     const store = [...c.stores].sort((a, b) => b[1] - a[1])[0]?.[0];
     return { ...c, freq, type: freq >= 2 ? 'LOYAL' : 'NEW', aov: c.value / freq, store, storeName: storeMap.get(store)?.store_name ?? store };
   });
+
+  // --- RFM: recency dihitung dari akhir periode; ambang adaptif terhadap panjang periode
+  const end = scopeEnd ?? orders.reduce((m, o) => (o.trx_date > m ? o.trx_date : m), '');
+  const start = scopeStart ?? orders.reduce((m, o) => (o.trx_date < m ? o.trx_date : m), end);
+  const span = Math.max(1, dayDiff(end, start) + 1);
+  const tRecent = Math.max(2, Math.round(span * 0.25));
+  const tDormant = Math.max(4, Math.round(span * 0.6));
+  const p50 = quantile(customers.map((c) => c.value), 0.5);
+  const segOf = (c) => {
+    const highValue = c.value >= p50;
+    if (c.recencyDays <= tRecent && c.freq >= 3 && highValue) return 'CHAMPIONS';
+    if (c.freq >= 2 && c.recencyDays <= tDormant) return 'LOYAL';
+    if (c.recencyDays <= tDormant) return 'NEW_POTENTIAL';
+    return c.freq >= 2 || highValue ? 'AT_RISK' : 'HIBERNATING';
+  };
+  customers.forEach((c) => {
+    c.recencyDays = Math.max(0, dayDiff(end, c.last));
+    c.segment = segOf(c);
+  });
+  const custTotal = customers.reduce((a, c) => a + c.value, 0);
+  const bySegment = SEGMENTS.map((s) => {
+    const cs = customers.filter((c) => c.segment === s.id);
+    const value = cs.reduce((a, c) => a + c.value, 0);
+    return {
+      ...s, customers: cs.length, customerShare: ratio(cs.length, customers.length),
+      value, valueShare: ratio(value, custTotal),
+      avgValue: cs.length ? value / cs.length : 0,
+      avgFreq: cs.length ? cs.reduce((a, c) => a + c.freq, 0) / cs.length : 0,
+      avgRecency: cs.length ? cs.reduce((a, c) => a + c.recencyDays, 0) / cs.length : 0,
+    };
+  });
+  const winBack = customers.filter((c) => c.segment === 'AT_RISK' || c.segment === 'HIBERNATING').sort((a, b) => b.value - a.value);
 
   const totalValue = customers.reduce((s, c) => s + c.value, 0);
   const totalTrx = orders.length;
@@ -145,6 +194,7 @@ export function customerAnalytics(orders, { spgMap, storeMap }) {
   const byStore = [...storeAgg.values()].map((g) => ({
     ...g, storeName: storeMap.get(g.store)?.store_name ?? g.store, spgName: spgOfStore.get(g.store) ?? '—', repeatRate: ratio(g.loyal, g.customers), loyalValueShare: ratio(g.loyalValue, g.value),
   })).sort((a, b) => b.repeatRate - a.repeatRate);
+  customers.forEach((c) => { c.spgName = spgOfStore.get(c.store) ?? '—'; });
 
   // --- jam × hari belanja
   const heat = new Map();
@@ -160,6 +210,8 @@ export function customerAnalytics(orders, { spgMap, storeMap }) {
 
   return {
     customers, sorted, nvl, daily, byValue, byFreq, byBasket, pareto, byStore,
+    bySegment, winBack,
+    rfm: { span, tRecent, tDormant, p50, start, end },
     heat: { data: heatmap, hours: hours.map((h) => `${String(h).padStart(2, '0')}:00`), days: dayOrder.map((d) => DAYS[d]), max: Math.max(1, ...heatmap.map((x) => x[2])) },
     kpis: {
       customers: customers.length, identified, identifiedShare: ratio(identified, customers.length), totalValue, totalTrx,

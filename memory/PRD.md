@@ -42,6 +42,9 @@
 - New tab Product Analytic: Parent SKU contribution, SKU by value & qty (high→low), SKU ranking, cross-sell pairs (support/confidence/lift), companion finder, co-occurrence matrix
 - products.parent_sku column added (schema.sql + Master DB field); mock data has repeat customers, phone "0" buyers, multi-SKU baskets
 
+## Implemented (iteration 4)
+- RFM Segmentation on Customer Analytic: Champions / Loyal / New & Potensial / At Risk / Hibernating with adaptive thresholds (aktif <= span*0.25, diam > span*0.6, high value >= P50), segment cards + chart + detail table, Prioritas Win-Back table (At Risk+Hibernating by value desc, store/SPG, idle days), Segment badge column in Top Customer, win-back insight bullet
+
 ## Backlog
 - P0: Connect real Supabase (fill .env, run schema.sql, create Auth users)
 - P1: Require login (viewer role) for reading dashboard data; email notification to leaders

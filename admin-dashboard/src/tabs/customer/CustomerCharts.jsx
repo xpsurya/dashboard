@@ -41,7 +41,7 @@ export function NvlDailyChart({ daily }) {
 }
 
 // bar = jumlah (customer / trx), line = % omzet
-export function BucketChart({ rows, countKey, countLabel, color = COLORS.accent, testId }) {
+export function BucketChart({ rows, countKey, countLabel, color = COLORS.accent, colors, testId }) {
   const option = useMemo(() => ({
     ...baseOption,
     xAxis: { type: 'category', data: rows.map((r) => r.label), ...axis({ splitLine: { show: false }, axisLabel: { interval: 0, fontSize: 10 } }) },
@@ -50,10 +50,10 @@ export function BucketChart({ rows, countKey, countLabel, color = COLORS.accent,
       { type: 'value', name: '% Omzet', min: 0, ...axis({ splitLine: { show: false }, axisLabel: { formatter: '{value}%' } }) },
     ],
     series: [
-      { name: countLabel, type: 'bar', barMaxWidth: 40, data: rows.map((r) => r[countKey]), itemStyle: { color, borderRadius: [4, 4, 0, 0] }, label: { show: true, position: 'top', color: '#CBD5E1', fontSize: 10, formatter: ({ value }) => num(value) }, tooltip: { valueFormatter: num } },
+      { name: countLabel, type: 'bar', barMaxWidth: 40, data: rows.map((r) => r[countKey]), itemStyle: { color: colors ? (p) => colors[p.dataIndex] : color, borderRadius: [4, 4, 0, 0] }, label: { show: true, position: 'top', color: '#CBD5E1', fontSize: 10, formatter: ({ value }) => num(value) }, tooltip: { valueFormatter: num } },
       { name: '% Omzet', type: 'line', yAxisIndex: 1, smooth: true, data: rows.map((r) => +r.valueShare.toFixed(1)), symbolSize: 7, lineStyle: { width: 3, color: COLORS.success }, itemStyle: { color: COLORS.success }, tooltip: { valueFormatter: pctFmt } },
     ],
-  }), [rows, countKey, countLabel, color]);
+  }), [rows, countKey, countLabel, color, colors]);
   return <EChart option={option} height={290} testId={testId} />;
 }
 

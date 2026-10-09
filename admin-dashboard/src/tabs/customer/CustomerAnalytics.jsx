@@ -1,13 +1,23 @@
 import { useMemo, useState } from 'react';
-import { BarChart3, Clock, Crown, Gem, Lightbulb, Repeat, ShoppingBasket, Store, UserCheck, UserPlus, Users, Wallet } from 'lucide-react';
+import { BarChart3, Clock, Crown, Gem, Lightbulb, PhoneCall, Repeat, ShoppingBasket, Store, Target, UserCheck, UserPlus, Users, Wallet } from 'lucide-react';
 import { useDashboard } from '../../context/DashboardContext';
 import { Badge, Card, EmptyState, KpiCard } from '../../components/common/ui';
 import { DataTable, ScopeToggle } from '../../components/common/ScopeToggle';
-import { customerAnalytics, maskPhone, scopeOrders } from '../../lib/customerAnalytics';
+import { SEGMENT_BY_ID, customerAnalytics, maskPhone, scopeOrders } from '../../lib/customerAnalytics';
 import { fmtDate, idr, idrCompact, matches, num, pct } from '../../lib/format';
 import { BucketChart, HourHeatmap, NvlDailyChart, NvlShareChart, ParetoChart, TYPE_COLOR } from './CustomerCharts';
 
 const TypeBadge = ({ type }) => <Badge tone={type === 'LOYAL' ? 'yellow' : 'blue'}>{type === 'LOYAL' ? 'Loyal' : 'New'}</Badge>;
+
+const SegBadge = ({ id }) => {
+  const s = SEGMENT_BY_ID[id];
+  if (!s) return null;
+  return (
+    <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold text-slate-100" data-testid={`segment-badge-${id}`}>
+      <span className="h-2 w-2 rounded-full" style={{ background: s.color }} />{s.label}
+    </span>
+  );
+};
 
 function NvlTable({ nvl }) {
   const N = nvl.NEW;
@@ -58,8 +68,12 @@ function NvlTable({ nvl }) {
 }
 
 function insights(a) {
-  const { kpis: k, nvl, byBasket, byStore, heat } = a;
+  const { kpis: k, nvl, byBasket, byStore, heat, bySegment, winBack } = a;
   const out = [];
+  const riskSeg = bySegment.filter((s) => s.id === 'AT_RISK' || s.id === 'HIBERNATING');
+  const riskCount = riskSeg.reduce((s, x) => s + x.customers, 0);
+  const riskValue = riskSeg.reduce((s, x) => s + x.value, 0);
+  if (riskCount) out.push(`${num(riskCount)} customer senilai ${idrCompact(riskValue)} berstatus At Risk / Hibernating — mulai win-back dari ${winBack[0] ? `${winBack[0].name} (${idrCompact(winBack[0].value)})` : 'nilai terbesar'}.`);
   out.push(`Loyal customer hanya ${pct(nvl.LOYAL.customerShare)} dari total customer, namun menyumbang ${pct(nvl.LOYAL.valueShare)} omzet.`);
   out.push(`${pct(k.top20ValueShare)} omzet berasal dari 20% customer teratas; ${pct(k.top80Share)} customer sudah menghasilkan 80% omzet.`);
   const single = byBasket[0];
@@ -74,11 +88,12 @@ function insights(a) {
 
 export default function CustomerAnalytics() {
   const ctx = useDashboard();
-  const { sales, filters, spgMap, storeMap } = ctx;
+  const { sales, filters, spgMap, storeMap, month } = ctx;
   const [scope, setScope] = useState('mtd');
   const [q, setQ] = useState('');
   const orders = useMemo(() => scopeOrders(ctx, scope), [sales, scope, filters]); // eslint-disable-line react-hooks/exhaustive-deps
-  const a = useMemo(() => customerAnalytics(orders, { spgMap, storeMap }), [orders, spgMap, storeMap]);
+  const bounds = scope === 'mtd' ? { scopeStart: month.start, scopeEnd: filters.dateTo } : { scopeStart: filters.dateFrom, scopeEnd: filters.dateTo };
+  const a = useMemo(() => customerAnalytics(orders, { spgMap, storeMap, ...bounds }), [orders, spgMap, storeMap, bounds.scopeStart, bounds.scopeEnd]); // eslint-disable-line react-hooks/exhaustive-deps
   const k = a.kpis;
   const top = useMemo(() => a.sorted.filter((c) => matches(q || filters.search, c.name, c.phone, c.storeName)).slice(0, 20), [a.sorted, q, filters.search]);
 
@@ -113,10 +128,32 @@ export default function CustomerAnalytics() {
     { label: 'Repeat Rate', right: true, render: (r) => <span className={r.repeatRate >= k.repeatRate ? 'text-emerald-300' : 'text-red-300'}>{pct(r.repeatRate)}</span> },
     { label: '% Omzet Loyal', right: true, render: (r) => pct(r.loyalValueShare) },
   ];
+  const segCols = [
+    { label: 'Segment', render: (r) => <SegBadge id={r.id} /> },
+    { label: 'Customer', right: true, render: (r) => num(r.customers) },
+    { label: '% Cust', right: true, render: (r) => pct(r.customerShare) },
+    { label: 'Omzet', right: true, render: (r) => idrCompact(r.value) },
+    { label: '% Omzet', right: true, cls: 'text-emerald-300', render: (r) => pct(r.valueShare) },
+    { label: 'Avg Value', right: true, render: (r) => idrCompact(r.avgValue) },
+    { label: 'Avg Frek', right: true, render: (r) => `${r.avgFreq.toFixed(1)}x` },
+    { label: 'Avg Diam', right: true, render: (r) => `${Math.round(r.avgRecency)} hari` },
+  ];
+  const winCols = [
+    { label: '#', render: (r, i) => <span className="font-mono text-slate-500">{i + 1}</span> },
+    { label: 'Customer', render: (r) => <div><p className="text-slate-100">{r.name}</p><p className="font-mono text-[11px] text-slate-500">{r.phone ? maskPhone(r.phone) : `ID TRX · ${r.key.slice(2)}`}</p></div> },
+    { label: 'Segment', render: (r) => <SegBadge id={r.segment} /> },
+    { label: 'Store / SPG', render: (r) => <div><p className="text-slate-300">{r.storeName}</p><p className="text-[11px] text-slate-500">{r.spgName}</p></div> },
+    { label: 'Terakhir Beli', render: (r) => <span className="text-xs text-slate-400">{fmtDate(r.last)}</span> },
+    { label: 'Diam', right: true, render: (r) => <span className="text-red-300">{r.recencyDays} hari</span> },
+    { label: 'Frek', right: true, render: (r) => `${r.freq}x` },
+    { label: 'Total Value', right: true, cls: 'text-emerald-300', render: (r) => idr(r.value) },
+    { label: 'AOV', right: true, render: (r) => idrCompact(r.aov) },
+  ];
   const topCols = [
     { label: '#', render: (r, i) => <span className="font-mono text-slate-500">{i + 1}</span> },
     { label: 'Customer', render: (r) => <div><p className="text-slate-100">{r.name}</p><p className="font-mono text-[11px] text-slate-500">{r.phone ? maskPhone(r.phone) : `ID TRX · ${r.key.slice(2)}`}</p></div> },
     { label: 'Tipe', render: (r) => <TypeBadge type={r.type} /> },
+    { label: 'Segment', render: (r) => <SegBadge id={r.segment} /> },
     { label: 'Store', render: (r) => <span className="text-slate-300">{r.storeName}</span> },
     { label: 'Frek', right: true, render: (r) => `${r.freq}x` },
     { label: 'Total Value', right: true, cls: 'text-emerald-300', render: (r) => idr(r.value) },
@@ -147,12 +184,37 @@ export default function CustomerAnalytics() {
 
           <div className="grid gap-5 xl:grid-cols-5">
             <Card title="NEW vs LOYAL Customer — Perbandingan" subtitle="New = belanja 1x · Loyal = belanja berulang (≥ 2x) pada periode" icon={UserCheck} className="xl:col-span-2" testId="nvl-compare-card">
-              <NvlTable nvl={a.nvl} />
+              <div className="overflow-x-auto"><NvlTable nvl={a.nvl} /></div>
             </Card>
             <div className="grid gap-5 xl:col-span-3">
               <Card title="Share Customer · Transaksi · Omzet" icon={BarChart3} testId="nvl-share-card"><NvlShareChart nvl={a.nvl} /></Card>
               <Card title="Omzet Harian — New vs Loyal" icon={BarChart3} testId="nvl-daily-card"><NvlDailyChart daily={a.daily} /></Card>
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5" data-testid="rfm-segments-row">
+            {a.bySegment.map((s) => (
+              <div key={s.id} className="card fade-up border-l-4 p-4" style={{ borderLeftColor: s.color }} data-testid={`segment-card-${s.id}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-bold text-slate-100">{s.label}</p>
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: s.color }} />
+                </div>
+                <p className="mt-1 font-mono text-2xl font-bold text-white">{num(s.customers)}</p>
+                <p className="text-[11px] text-slate-400">{pct(s.customerShare)} customer · {pct(s.valueShare)} omzet</p>
+                <p className="mt-1.5 text-[10px] leading-snug text-slate-500">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid gap-5 2xl:grid-cols-2">
+            <Card title="RFM Segmentation" subtitle={`Ambang adaptif: aktif ≤ ${a.rfm.tRecent} hari · diam > ${a.rfm.tDormant} hari · nilai tinggi ≥ ${idrCompact(a.rfm.p50)} · acuan ${fmtDate(a.rfm.end)} · periode ${a.rfm.span} hari`} icon={Target} testId="rfm-card">
+              <BucketChart rows={a.bySegment} countKey="customers" countLabel="Customer" colors={a.bySegment.map((s) => s.color)} testId="chart-rfm-segment" />
+              <DataTable columns={segCols} rows={a.bySegment} testId="rfm-detail-table" rowKey={(r) => r.id} maxHeight="" />
+            </Card>
+            <Card title="Prioritas Win-Back" subtitle={`${num(a.winBack.length)} customer diam > ${a.rfm.tDormant} hari · nilai berisiko ${idrCompact(a.winBack.reduce((s, c) => s + c.value, 0))} · urut nilai terbesar`} icon={PhoneCall} bodyClass="p-0" testId="winback-card">
+              <DataTable columns={winCols} rows={a.winBack.slice(0, 20)} testId="winback-table" rowKey={(r) => r.key} />
+              {!a.winBack.length && <EmptyState text="Tidak ada customer yang diam melewati ambang — bagus!" testId="winback-empty" />}
+            </Card>
           </div>
 
           <div className="grid gap-5 2xl:grid-cols-2">

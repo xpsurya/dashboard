@@ -101,21 +101,54 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
-user_problem_statement: "Field Force Command Center (Vite app at /app/admin-dashboard, served on :3000, MOCK mode). Iteration 3 requests: 1) remove live feed 2) heatmap cell click shows foto absen 3) Export CSV checklist raw selling/absen/stock/validasi-audit 4) Review queue shows foto nota / foto absen enlargeable 5) Photo gallery remove foto absen masuk & foto nota 6) Customer Analytic tab 7) Product Analytic tab"
+user_problem_statement: "Field Force Command Center (Vite app at /app/admin-dashboard, served on :3000, MOCK mode). Iteration 4: Add RFM Segmentation with Champions, Loyal, At Risk, Hibernating customer groups so leaders know who to win back first. Frontend-only feature on the Customer Analytic tab."
+
 frontend:
   - task: "Iteration 3 features (7 items)"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/admin-dashboard/src"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Implemented all 7 items; self-verified with screenshots"
+        - working: true
+          agent: "testing"
+          comment: "Regression testing passed - all iteration 3 features still working correctly"
+  
+  - task: "Iteration 4 - RFM Segmentation & Win-Back"
+    implemented: true
+    working: true
+    file: "/app/admin-dashboard/src/lib/customerAnalytics.js, /app/admin-dashboard/src/tabs/customer/CustomerAnalytics.jsx, /app/admin-dashboard/src/tabs/customer/CustomerCharts.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "RFM segments (Champions/Loyal/New&Potensial/At Risk/Hibernating), adaptive thresholds, win-back priority table; self-verified desktop+mobile"
+        - working: true
+          agent: "testing"
+          comment: "Comprehensive testing completed - 35/35 tests passed (100%). All RFM features working correctly: 5 segment cards with counts/percentages, RFM card with adaptive thresholds, chart and detail table, Win-Back card with AT_RISK/HIBERNATING customers sorted by value, Top Customer table has Segment column, Insight Otomatis mentions win-back, scope toggle works, segment counts sum equals total KPI (870 customers), mobile 390px responsive with no overflow, all iteration 3 regression tests passed."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+  last_tested: "2026-10-09T07:26:02.153Z"
+
 test_plan:
-  current_focus:
-    - "Iteration 3 features (7 items)"
+  current_focus: []
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
+
+agent_communication:
+    - agent: "main"
+      message: "Iteration 4 RFM Segmentation implemented with all requested features. Ready for testing."
+    - agent: "testing"
+      message: "Testing completed successfully. All 35 tests passed with 100% success rate. No issues found. Implementation is production-ready."
